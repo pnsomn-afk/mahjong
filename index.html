@@ -7,13 +7,24 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  body { background-color: #E2E6DE; color: #2D3748; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background-color: #E2E6DE; color: #2D3748; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
   .card { background-color: #F7F9F6; border: 1px solid #D1D8CD; border-radius: 12px; }
   .btn-main { background-color: #4A5D4E; color: white; border-radius: 8px; }
   .tab-active { color: #4A5D4E; font-weight: bold; }
   .tab-inactive { color: #8C9A8E; }
   .score-pos { color: #1E40AF; }
   .score-neg { color: #DC2626; }
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 38px;
+    line-height: normal;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
@@ -28,11 +39,11 @@
 </header>
 
 <!-- メイン表示領域 -->
-<main id="main-content" class="flex-1 overflow-y-auto p-4 pb-24">
+<main id="main-content" class="flex-1 overflow-y-auto p-3 pb-24">
   
   <!-- 【1. 入力画面】 -->
   <div id="view-input" class="space-y-3">
-    <!-- 対局情報アコーディオン -->
+    <!-- 対局情報・ルール設定 -->
     <div class="card p-3 shadow-sm">
       <div class="flex justify-between items-center cursor-pointer" onclick="toggleConfig()">
         <span class="font-bold text-sm text-[#4A5D4E]">対局情報・ルール設定</span>
@@ -41,29 +52,29 @@
       <div id="config-body" class="grid grid-cols-2 gap-2 mt-3 text-xs">
         <div>
           <label class="block text-gray-600 mb-1">レート (P/千点)</label>
-          <input type="number" id="cfg-rate" value="100" class="w-full bg-white border border-[#D1D8CD] rounded p-1.5 text-center font-bold">
+          <input type="number" id="cfg-rate" value="100" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">チップ (P/枚)</label>
-          <input type="number" id="cfg-chip" value="300" class="w-full bg-white border border-[#D1D8CD] rounded p-1.5 text-center font-bold">
+          <input type="number" id="cfg-chip" value="300" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">日付</label>
-          <input type="date" id="cfg-date" class="w-full bg-white border border-[#D1D8CD] rounded p-1 text-center font-medium">
+          <input type="date" id="cfg-date" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg px-2 text-center font-medium text-xs outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">ゲーム代(総額)</label>
-          <input type="number" id="cfg-gamefee" value="0" placeholder="0" class="w-full bg-white border border-[#D1D8CD] rounded p-1.5 text-center font-bold">
+          <input type="number" id="cfg-gamefee" value="0" placeholder="0" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">トビ基準 (以下でトビ)</label>
-          <input type="number" id="cfg-tobi" value="-50" class="w-full bg-white border border-[#D1D8CD] rounded p-1.5 text-center font-bold">
+          <input type="number" id="cfg-tobi" value="-50" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">対局人数</label>
-          <div class="flex bg-gray-200 rounded p-0.5 mt-0.5">
-            <button onclick="setPlayerCount(3)" id="btn-p3" class="flex-1 py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white">3人</button>
-            <button onclick="setPlayerCount(4)" id="btn-p4" class="flex-1 py-1 text-xs rounded font-bold text-gray-600">4人</button>
+          <div class="flex bg-gray-200 rounded-lg p-0.5 h-[38px] items-center">
+            <button onclick="setPlayerCount(3)" id="btn-p3" class="flex-1 h-full py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white transition-all">3人</button>
+            <button onclick="setPlayerCount(4)" id="btn-p4" class="flex-1 h-full py-1 text-xs rounded font-bold text-gray-600 transition-all">4人</button>
           </div>
         </div>
       </div>
@@ -72,91 +83,110 @@
     <!-- スコア入力シート -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
-        <!-- プレイヤーヘッダー -->
         <thead>
           <tr class="border-b border-[#D1D8CD] text-xs font-bold text-gray-700">
-            <th class="py-2 w-10">半</th>
-            <th class="py-2"><input id="pname-0" value="mor" class="bg-transparent text-center w-full font-bold"></th>
-            <th class="py-2"><input id="pname-1" value="ありけ" class="bg-transparent text-center w-full font-bold"></th>
-            <th class="py-2"><input id="pname-2" value="いわさ" class="bg-transparent text-center w-full font-bold"></th>
-            <th id="th-p3" class="py-2 hidden"><input id="pname-3" value="ゲスト" class="bg-transparent text-center w-full font-bold"></th>
+            <th class="py-2 w-8 text-center text-gray-400">半</th>
+            <th class="py-2 px-1">
+              <div class="flex items-center justify-center">
+                <input id="pname-0" value="自分" readonly onclick="changeMyNameModal()" class="bg-gray-100/80 border border-transparent rounded px-1 text-center w-full font-bold cursor-pointer">
+              </div>
+            </th>
+            <th class="py-2 px-1">
+              <div class="flex items-center justify-center gap-0.5">
+                <input id="pname-1" value="ありけ" onchange="calcTotals()" class="bg-white/80 border border-[#D1D8CD] rounded px-1 text-center w-full font-bold">
+                <button onclick="openNameSelector(1)" class="text-xs text-gray-400 hover:text-gray-700 px-0.5">👥</button>
+              </div>
+            </th>
+            <th class="py-2 px-1">
+              <div class="flex items-center justify-center gap-0.5">
+                <input id="pname-2" value="いわさ" onchange="calcTotals()" class="bg-white/80 border border-[#D1D8CD] rounded px-1 text-center w-full font-bold">
+                <button onclick="openNameSelector(2)" class="text-xs text-gray-400 hover:text-gray-700 px-0.5">👥</button>
+              </div>
+            </th>
+            <th id="th-p3" class="py-2 px-1 hidden">
+              <div class="flex items-center justify-center gap-0.5">
+                <input id="pname-3" value="ゲスト" onchange="calcTotals()" class="bg-white/80 border border-[#D1D8CD] rounded px-1 text-center w-full font-bold">
+                <button onclick="openNameSelector(3)" class="text-xs text-gray-400 hover:text-gray-700 px-0.5">👥</button>
+              </div>
+            </th>
           </tr>
         </thead>
-        <!-- 半荘行 -->
         <tbody id="score-rows" class="text-sm divide-y divide-gray-200"></tbody>
-        <!-- 集計フッター -->
-        <tfoot class="border-t-2 border-[#D1D8CD] font-bold text-xs bg-gray-50/50">
+        <tfoot class="border-t-2 border-[#D1D8CD] font-bold text-xs bg-gray-50/70">
           <tr>
-            <td class="py-2 text-gray-600">計</td>
-            <td id="total-pts-0" class="py-2">0</td>
-            <td id="total-pts-1" class="py-2">0</td>
-            <td id="total-pts-2" class="py-2">0</td>
-            <td id="total-pts-3" class="py-2 hidden">0</td>
+            <td class="py-2.5 text-gray-500">計</td>
+            <td id="total-pts-0" class="py-2.5">0</td>
+            <td id="total-pts-1" class="py-2.5">0</td>
+            <td id="total-pts-2" class="py-2.5">0</td>
+            <td id="total-pts-3" class="py-2.5 hidden">0</td>
           </tr>
           <tr>
-            <td class="py-2 text-gray-600">チップ</td>
-            <td class="p-1"><input type="number" id="chip-0" onfocus="autoCompleteChip(0)" oninput="calcTotals()" placeholder="0" class="w-full bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="number" id="chip-1" onfocus="autoCompleteChip(1)" oninput="calcTotals()" placeholder="0" class="w-full bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="number" id="chip-2" onfocus="autoCompleteChip(2)" oninput="calcTotals()" placeholder="0" class="w-full bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td id="td-chip-3" class="p-1 hidden"><input type="number" id="chip-3" onfocus="autoCompleteChip(3)" oninput="calcTotals()" placeholder="0" class="w-full bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="py-2 text-gray-500">チップ</td>
+            <td class="p-1"><input type="number" id="chip-0" onfocus="autoCompleteChip(0)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="number" id="chip-1" onfocus="autoCompleteChip(1)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="number" id="chip-2" onfocus="autoCompleteChip(2)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td id="td-chip-3" class="p-1 hidden"><input type="number" id="chip-3" onfocus="autoCompleteChip(3)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
           </tr>
           <tr>
-            <td class="py-2 text-gray-600">収支</td>
+            <td class="py-2 text-gray-500">収支</td>
             <td id="syushi-0" class="py-2">0</td>
             <td id="syushi-1" class="py-2">0</td>
             <td id="syushi-2" class="py-2">0</td>
             <td id="syushi-3" class="py-2 hidden">0</td>
           </tr>
-          <tr class="bg-[#EAEFE8]">
-            <td class="py-2 text-[#4A5D4E] leading-tight">最終<br>(場代込)</td>
-            <td id="final-0" class="py-2 text-sm font-bold">0</td>
-            <td id="final-1" class="py-2 text-sm font-bold">0</td>
-            <td id="final-2" class="py-2 text-sm font-bold">0</td>
-            <td id="final-3" class="py-2 text-sm font-bold hidden">0</td>
+          <tr class="bg-[#EAEFE8] border-t border-[#D1D8CD]">
+            <td class="py-2.5 text-[#4A5D4E] leading-tight">最終<br><span class="text-[9px] font-normal text-gray-500">(場代込)</span></td>
+            <td id="final-0" class="py-2.5 text-sm font-bold">0</td>
+            <td id="final-1" class="py-2.5 text-sm font-bold">0</td>
+            <td id="final-2" class="py-2.5 text-sm font-bold">0</td>
+            <td id="final-3" class="py-2.5 text-sm font-bold hidden">0</td>
           </tr>
         </tfoot>
       </table>
 
       <!-- 行追加ボタン -->
-      <button onclick="addRow()" class="w-full mt-3 py-2 border border-dashed border-[#8C9A8E] text-[#4A5D4E] rounded-lg text-xs font-bold bg-white/50 active:bg-white">+ 半荘を追加</button>
+      <button onclick="addRow()" class="w-full mt-3 py-2.5 border border-dashed border-[#8C9A8E] text-[#4A5D4E] rounded-lg text-xs font-bold bg-white active:bg-gray-100 flex items-center justify-center gap-1">
+        <span>＋</span><span>半荘を追加</span>
+      </button>
     </div>
 
-    <!-- 登録ボタン -->
-    <div class="flex gap-2 pt-2">
-      <button onclick="resetForm()" class="w-1/3 py-3 rounded-lg border border-[#8C9A8E] text-gray-600 text-sm font-bold bg-white active:bg-gray-100">クリア</button>
-      <button onclick="saveMatch()" class="w-2/3 py-3 rounded-lg btn-main text-sm font-bold shadow active:opacity-90">登録する</button>
+    <!-- 登録ボタン（クリアを撤廃してフルサイズ化） -->
+    <div class="pt-2">
+      <button onclick="saveMatch()" id="btn-save-match" class="w-full py-3.5 rounded-xl btn-main text-base font-bold shadow-md active:opacity-90 flex items-center justify-center gap-2">
+        <span>対局結果を登録する</span>
+      </button>
     </div>
   </div>
 
   <!-- 【2. ホーム（戦績・グラフ）画面】 -->
-  <div id="view-home" class="space-y-4 hidden">
-    <!-- 個人戦績カード -->
+  <div id="view-home" class="space-y-3 hidden">
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="font-bold text-sm text-[#4A5D4E]">通算戦績 (<span id="stats-user">mor</span>)</h2>
+        <h2 class="font-bold text-sm text-[#4A5D4E]">通算戦績 (<span id="stats-user">自分</span>)</h2>
+        <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline">名前変更</button>
       </div>
       <div class="grid grid-cols-3 gap-2 text-center mb-3">
-        <div class="bg-white p-2 rounded border border-[#D1D8CD]">
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">1着</div>
           <div id="st-1st" class="text-base font-bold">0回</div>
           <div id="st-1st-rate" class="text-[9px] text-gray-400">0%</div>
         </div>
-        <div class="bg-white p-2 rounded border border-[#D1D8CD]">
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">2着</div>
           <div id="st-2nd" class="text-base font-bold">0回</div>
           <div id="st-2nd-rate" class="text-[9px] text-gray-400">0%</div>
         </div>
-        <div class="bg-white p-2 rounded border border-[#D1D8CD]">
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">3着</div>
           <div id="st-3rd" class="text-base font-bold">0回</div>
           <div id="st-3rd-rate" class="text-[9px] text-gray-400">0%</div>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="bg-white p-2 rounded border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
-        <div class="bg-white p-2 rounded border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
-        <div class="bg-white p-2 rounded border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">総収支:</span><span id="st-totalfee" class="font-bold">0</span></div>
-        <div class="bg-white p-2 rounded border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">総収支:</span><span id="st-totalfee" class="font-bold">0</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
       </div>
     </div>
 
@@ -183,7 +213,16 @@
 
 </main>
 
-<!-- ナビゲーションバー -->
+<!-- 名前選択モーダル -->
+<div id="modal-name-select" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
+    <h3 class="font-bold text-sm text-gray-800 border-b pb-2">対戦者を選択</h3>
+    <div id="name-candidate-list" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+    <button onclick="closeNameSelector()" class="w-full py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold">閉じる</button>
+  </div>
+</div>
+
+<!-- 下部ナビゲーション -->
 <nav class="bg-[#F7F9F6] border-t border-[#D1D8CD] fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around z-30">
   <button onclick="showTab('input')" id="tab-input" class="tab-active flex flex-col items-center flex-1">
     <span class="text-xl">✏️</span><span class="text-[10px] mt-0.5">入力</span>
@@ -204,11 +243,19 @@ let pCount = 3;
 let rowCount = 0;
 let editTargetId = null;
 let chartInstance = null;
+let currentSelectingPIdx = null;
 
-// 初期化
 document.addEventListener('DOMContentLoaded', () => {
+  // 自分の名前の読み込み
+  const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
+  document.getElementById('pname-0').value = savedMyName;
+
+  // 今日の日付セット
   document.getElementById('cfg-date').valueAsDate = new Date();
+  
+  // 初期行4つ
   for(let i=0; i<4; i++) addRow();
+  
   renderHistory();
   renderHome();
   renderRivals();
@@ -221,10 +268,21 @@ function toggleConfig() {
   arrow.innerText = body.classList.contains('hidden') ? '▲' : '▼';
 }
 
+function changeMyNameModal() {
+  const current = localStorage.getItem('mahjong_my_name') || '自分';
+  const newName = prompt('自分の名前（固定）を入力してください:', current);
+  if(newName && newName.trim() !== '') {
+    localStorage.setItem('mahjong_my_name', newName.trim());
+    document.getElementById('pname-0').value = newName.trim();
+    renderHome();
+    renderRivals();
+  }
+}
+
 function setPlayerCount(num) {
   pCount = num;
-  document.getElementById('btn-p3').className = num === 3 ? 'flex-1 py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white' : 'flex-1 py-1 text-xs rounded font-bold text-gray-600';
-  document.getElementById('btn-p4').className = num === 4 ? 'flex-1 py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white' : 'flex-1 py-1 text-xs rounded font-bold text-gray-600';
+  document.getElementById('btn-p3').className = num === 3 ? 'flex-1 h-full py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white transition-all' : 'flex-1 h-full py-1 text-xs rounded font-bold text-gray-600 transition-all';
+  document.getElementById('btn-p4').className = num === 4 ? 'flex-1 h-full py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white transition-all' : 'flex-1 h-full py-1 text-xs rounded font-bold text-gray-600 transition-all';
   document.getElementById('th-p3').classList.toggle('hidden', num === 3);
   document.getElementById('total-pts-3').classList.toggle('hidden', num === 3);
   document.getElementById('td-chip-3').classList.toggle('hidden', num === 3);
@@ -240,12 +298,15 @@ function addRow() {
   rowCount++;
   const tr = document.createElement('tr');
   tr.id = `row-${rowCount}`;
+  tr.dataset.rId = rowCount;
   tr.innerHTML = `
-    <td class="py-2 text-xs font-bold text-gray-500">${rowCount}</td>
+    <td class="py-2 text-xs font-bold text-gray-500 relative">
+      <button onclick="removeRow(${rowCount})" class="w-5 h-5 bg-red-100 text-red-600 rounded-full text-[10px] font-bold inline-flex items-center justify-center hover:bg-red-200">✕</button>
+    </td>
     ${[0,1,2,3].map(i => `
       <td class="p-1 ${i === 3 && pCount === 3 ? 'hidden' : ''} ${i === 3 ? 'cell-p3' : ''}">
         <div class="relative">
-          <input type="number" step="any" id="score-${rowCount}-${i}" onfocus="autoCompleteScore(${rowCount}, ${i})" oninput="onScoreInput(${rowCount}, ${i})" class="w-full bg-white border border-[#D1D8CD] rounded p-1.5 text-center font-bold text-sm focus:border-[#4A5D4E] outline-none">
+          <input type="number" step="any" id="score-${rowCount}-${i}" onfocus="autoCompleteScore(${rowCount}, ${i})" oninput="onScoreInput(${rowCount}, ${i})" class="w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
           <span id="tobi-badge-${rowCount}-${i}" class="hidden absolute top-0.5 right-0.5 bg-yellow-400 text-[9px] px-1 rounded text-gray-800 font-bold">トビ</span>
         </div>
       </td>
@@ -254,62 +315,101 @@ function addRow() {
   document.getElementById('score-rows').appendChild(tr);
 }
 
-// 最後の1人のスコア自動補完 (合計0)
+function removeRow(rId) {
+  if(confirm(`${rId}半荘目の行を削除しますか？`)) {
+    const rowEl = document.getElementById(`row-${rId}`);
+    if(rowEl) {
+      rowEl.remove();
+      calcTotals();
+    }
+  }
+}
+
+// スコア自動補完（修正時の再補完にも完全対応）
 function autoCompleteScore(rId, pIdx) {
-  const input = document.getElementById(`score-${rId}-${pIdx}`);
-  if(input.value !== '') return;
   let filled = 0;
   let currentSum = 0;
   for(let i=0; i<pCount; i++) {
     if(i !== pIdx) {
-      const val = parseFloat(document.getElementById(`score-${rId}-${i}`).value);
-      if(!isNaN(val)) {
-        filled++;
-        currentSum += val;
+      const inputEl = document.getElementById(`score-${rId}-${i}`);
+      if(inputEl && inputEl.value !== '') {
+        const val = parseFloat(inputEl.value);
+        if(!isNaN(val)) {
+          filled++;
+          currentSum += val;
+        }
       }
     }
   }
+  // 他の全員が入力済みであれば、現在のセルを合計0の差分で自動上書き
   if(filled === pCount - 1) {
     const complement = Math.round((-currentSum) * 10) / 10;
-    input.value = complement;
-    onScoreInput(rId, pIdx);
+    const selfInput = document.getElementById(`score-${rId}-${pIdx}`);
+    if(selfInput) {
+      selfInput.value = complement;
+      onScoreInput(rId, pIdx);
+    }
   }
 }
 
 function onScoreInput(rId, pIdx) {
   const input = document.getElementById(`score-${rId}-${pIdx}`);
+  if(!input) return;
   const val = parseFloat(input.value);
   const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -50;
   const badge = document.getElementById(`tobi-badge-${rId}-${pIdx}`);
   
   if(!isNaN(val)) {
-    input.className = `w-full bg-white border border-[#D1D8CD] rounded p-1.5 text-center font-bold text-sm outline-none ${val > 0 ? 'score-pos' : val < 0 ? 'score-neg' : ''}`;
-    if(val <= tobiLimit) badge.classList.remove('hidden');
-    else badge.classList.add('hidden');
+    input.className = `w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E] ${val > 0 ? 'score-pos' : val < 0 ? 'score-neg' : ''}`;
+    if(val <= tobiLimit && badge) badge.classList.remove('hidden');
+    else if(badge) badge.classList.add('hidden');
   } else {
-    badge.classList.add('hidden');
+    input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
+    if(badge) badge.classList.add('hidden');
   }
   calcTotals();
 }
 
-// チップ自動補完 (合計0)
+function recheckTobiAll() {
+  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -50;
+  const rows = document.getElementById('score-rows').querySelectorAll('tr');
+  rows.forEach(tr => {
+    const rId = tr.dataset.rId;
+    for(let i=0; i<4; i++) {
+      const input = document.getElementById(`score-${rId}-${i}`);
+      const badge = document.getElementById(`tobi-badge-${rId}-${i}`);
+      if(input && badge) {
+        const val = parseFloat(input.value);
+        if(!isNaN(val) && val <= tobiLimit) badge.classList.remove('hidden');
+        else badge.classList.add('hidden');
+      }
+    }
+  });
+  calcTotals();
+}
+
+// チップ自動補完
 function autoCompleteChip(pIdx) {
-  const input = document.getElementById(`chip-${pIdx}`);
-  if(input.value !== '') return;
   let filled = 0;
   let currentSum = 0;
   for(let i=0; i<pCount; i++) {
     if(i !== pIdx) {
-      const val = parseInt(document.getElementById(`chip-${i}`).value);
-      if(!isNaN(val)) {
-        filled++;
-        currentSum += val;
+      const inputEl = document.getElementById(`chip-${i}`);
+      if(inputEl && inputEl.value !== '') {
+        const val = parseInt(inputEl.value);
+        if(!isNaN(val)) {
+          filled++;
+          currentSum += val;
+        }
       }
     }
   }
   if(filled === pCount - 1) {
-    input.value = -currentSum;
-    calcTotals();
+    const selfInput = document.getElementById(`chip-${pIdx}`);
+    if(selfInput) {
+      selfInput.value = -currentSum;
+      calcTotals();
+    }
   }
 }
 
@@ -320,25 +420,22 @@ function calcTotals() {
   const gameFee = parseInt(document.getElementById('cfg-gamefee').value) || 0;
   
   let totalPts = [0, 0, 0, 0];
-  let tobiCounts = [0, 0, 0, 0];
+  const rows = document.getElementById('score-rows').querySelectorAll('tr');
   
-  for(let r=1; r<=rowCount; r++) {
+  rows.forEach(tr => {
+    const rId = tr.dataset.rId;
     for(let p=0; p<pCount; p++) {
-      const val = parseFloat(document.getElementById(`score-${r}-${p}`)?.value);
-      if(!isNaN(val)) {
-        totalPts[p] += val;
-        const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -50;
-        if(val <= tobiLimit) tobiCounts[p]++;
-      }
+      const val = parseFloat(document.getElementById(`score-${rId}-${p}`)?.value);
+      if(!isNaN(val)) totalPts[p] += val;
     }
-  }
+  });
 
   let syushi = [0, 0, 0, 0];
   for(let p=0; p<pCount; p++) {
     totalPts[p] = Math.round(totalPts[p] * 10) / 10;
     const ptEl = document.getElementById(`total-pts-${p}`);
-    ptEl.innerText = totalPts[p];
-    ptEl.className = `py-2 font-bold ${totalPts[p] > 0 ? 'score-pos' : totalPts[p] < 0 ? 'score-neg' : ''}`;
+    ptEl.innerText = (totalPts[p] > 0 ? '+' : '') + totalPts[p];
+    ptEl.className = `py-2.5 font-bold ${totalPts[p] > 0 ? 'score-pos' : totalPts[p] < 0 ? 'score-neg' : ''}`;
     
     const chipVal = parseInt(document.getElementById(`chip-${p}`).value) || 0;
     syushi[p] = Math.round((totalPts[p] * rate) + (chipVal * chipRate));
@@ -353,7 +450,6 @@ function calcTotals() {
     const baseFeePerPerson = Math.floor(gameFee / pCount / 100) * 100;
     const remainder = gameFee - (baseFeePerPerson * pCount);
     
-    // 1位を特定
     let maxVal = -Infinity;
     let topIdx = 0;
     for(let p=0; p<pCount; p++) {
@@ -373,8 +469,45 @@ function calcTotals() {
   for(let p=0; p<pCount; p++) {
     const finEl = document.getElementById(`final-${p}`);
     finEl.innerText = (finalSyushi[p] > 0 ? '+' : '') + finalSyushi[p].toLocaleString();
-    finEl.className = `py-2 text-sm font-bold ${finalSyushi[p] > 0 ? 'score-pos' : finalSyushi[p] < 0 ? 'score-neg' : ''}`;
+    finEl.className = `py-2.5 text-sm font-bold ${finalSyushi[p] > 0 ? 'score-pos' : finalSyushi[p] < 0 ? 'score-neg' : ''}`;
   }
+}
+
+// 名前選択モーダル処理
+function openNameSelector(pIdx) {
+  currentSelectingPIdx = pIdx;
+  const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
+  const myName = localStorage.getItem('mahjong_my_name') || '自分';
+  let nameSet = new Set(['ありけ', 'いわさ', 'ゲスト']);
+  
+  history.forEach(m => {
+    m.names.forEach(n => {
+      if(n && n !== myName) nameSet.add(n);
+    });
+  });
+
+  const listEl = document.getElementById('name-candidate-list');
+  listEl.innerHTML = Array.from(nameSet).map(name => `
+    <button onclick="selectName('${name}')" class="w-full text-left px-3 py-2 text-xs font-bold text-gray-700 bg-gray-50 rounded hover:bg-gray-100 flex justify-between items-center">
+      <span>👤 ${name}</span>
+      <span class="text-[10px] text-gray-400">選択</span>
+    </button>
+  `).join('');
+
+  document.getElementById('modal-name-select').classList.remove('hidden');
+}
+
+function selectName(name) {
+  if(currentSelectingPIdx !== null) {
+    document.getElementById(`pname-${currentSelectingPIdx}`).value = name;
+  }
+  closeNameSelector();
+  calcTotals();
+}
+
+function closeNameSelector() {
+  document.getElementById('modal-name-select').classList.add('hidden');
+  currentSelectingPIdx = null;
 }
 
 // データ保存
@@ -382,16 +515,19 @@ function saveMatch() {
   const date = document.getElementById('cfg-date').value;
   const names = [0,1,2,3].slice(0, pCount).map(i => document.getElementById(`pname-${i}`).value || `P${i+1}`);
   let scores = [];
-  for(let r=1; r<=rowCount; r++) {
+  
+  const rows = document.getElementById('score-rows').querySelectorAll('tr');
+  rows.forEach(tr => {
+    const rId = tr.dataset.rId;
     let rowVals = [];
     let hasVal = false;
     for(let p=0; p<pCount; p++) {
-      const v = parseFloat(document.getElementById(`score-${r}-${p}`)?.value);
+      const v = parseFloat(document.getElementById(`score-${rId}-${p}`)?.value);
       rowVals.push(isNaN(v) ? 0 : v);
       if(!isNaN(v)) hasVal = true;
     }
     if(hasVal) scores.push(rowVals);
-  }
+  });
 
   if(scores.length === 0) {
     alert('スコアを入力してください');
@@ -414,7 +550,8 @@ function saveMatch() {
     finals,
     rate: parseFloat(document.getElementById('cfg-rate').value) || 100,
     chipRate: parseFloat(document.getElementById('cfg-chip').value) || 300,
-    gameFee: parseInt(document.getElementById('cfg-gamefee').value) || 0
+    gameFee: parseInt(document.getElementById('cfg-gamefee').value) || 0,
+    tobiLimit: parseFloat(document.getElementById('cfg-tobi').value) || -50
   };
 
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -426,15 +563,26 @@ function saveMatch() {
   }
   localStorage.setItem('mahjong_history', JSON.stringify(history));
 
-  alert('登録が完了しました');
-  resetForm();
+  alert('登録が完了しました。');
+  initNewMatchSheet();
   renderHistory();
   renderHome();
   renderRivals();
   showTab('history');
 }
 
-// 履歴一覧の描画
+// 登録後に次のゲーム用のクリーンなシートを用意
+function initNewMatchSheet() {
+  editTargetId = null;
+  document.getElementById('score-rows').innerHTML = '';
+  rowCount = 0;
+  for(let i=0; i<4; i++) addRow();
+  for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';
+  document.getElementById('cfg-gamefee').value = '0';
+  calcTotals();
+}
+
+// 履歴の描画
 function renderHistory() {
   const list = document.getElementById('history-list');
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -447,15 +595,15 @@ function renderHistory() {
     <div class="card p-3 shadow-sm space-y-2">
       <div class="flex justify-between items-center text-xs">
         <span class="font-bold text-gray-700">${m.date} (${m.pCount}人・${m.scores.length}半荘)</span>
-        <div class="space-x-2">
-          <button onclick="editMatch(${m.id})" class="text-blue-600 font-bold">編集</button>
-          <button onclick="deleteMatch(${m.id})" class="text-red-500 font-bold">削除</button>
+        <div class="space-x-3">
+          <button onclick="editMatch(${m.id})" class="text-blue-600 font-bold hover:underline">編集</button>
+          <button onclick="deleteMatch(${m.id})" class="text-red-500 font-bold hover:underline">削除</button>
         </div>
       </div>
-      <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-gray-50 p-2 rounded text-xs border border-gray-200">
+      <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2 rounded border border-[#D1D8CD] text-xs">
         ${m.names.map((n, i) => `
           <div>
-            <div class="text-gray-500 text-[10px]">${n}</div>
+            <div class="text-gray-500 text-[10px] truncate font-medium">${n}</div>
             <div class="font-bold ${m.finals[i] > 0 ? 'score-pos' : m.finals[i] < 0 ? 'score-neg' : ''}">
               ${(m.finals[i] > 0 ? '+' : '') + m.finals[i].toLocaleString()}
             </div>
@@ -466,7 +614,6 @@ function renderHistory() {
   `).join('');
 }
 
-// 履歴の編集
 function editMatch(id) {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const m = history.find(item => item.id === id);
@@ -477,6 +624,7 @@ function editMatch(id) {
   document.getElementById('cfg-rate').value = m.rate;
   document.getElementById('cfg-chip').value = m.chipRate;
   document.getElementById('cfg-gamefee').value = m.gameFee || 0;
+  document.getElementById('cfg-tobi').value = m.tobiLimit || -50;
   setPlayerCount(m.pCount);
 
   m.names.forEach((name, i) => {
@@ -511,14 +659,12 @@ function deleteMatch(id) {
   renderRivals();
 }
 
-// ホーム戦績・グラフの更新
 function renderHome() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
-  const myName = document.getElementById('pname-0').value || 'mor';
+  const myName = localStorage.getItem('mahjong_my_name') || '自分';
   document.getElementById('stats-user').innerText = myName;
 
   let posCounts = [0, 0, 0, 0];
-  let totalMatches = 0;
   let totalFee = 0;
   let tobiCount = 0;
   let totalHanso = 0;
@@ -529,7 +675,6 @@ function renderHome() {
   history.slice().reverse().forEach(m => {
     const myIdx = m.names.indexOf(myName);
     if(myIdx !== -1) {
-      totalMatches++;
       const myFin = m.finals[myIdx];
       totalFee += myFin;
       cumSum += myFin;
@@ -560,7 +705,6 @@ function renderHome() {
   document.getElementById('st-totalfee').innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
   document.getElementById('st-tobirate').innerText = totalHanso ? `${Math.round(tobiCount/totalHanso*100)}%` : '0%';
 
-  // グラフ描画
   const ctx = document.getElementById('chart-syushi').getContext('2d');
   if(chartInstance) chartInstance.destroy();
   chartInstance = new Chart(ctx, {
@@ -585,10 +729,9 @@ function renderHome() {
   });
 }
 
-// 相手別成績の描画
 function renderRivals() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
-  const myName = document.getElementById('pname-0').value || 'mor';
+  const myName = localStorage.getItem('mahjong_my_name') || '自分';
   const list = document.getElementById('rival-list');
   let rivals = {};
 
@@ -597,10 +740,9 @@ function renderRivals() {
     if(myIdx !== -1) {
       m.names.forEach((name, i) => {
         if(name !== myName) {
-          if(!rivals[name]) rivals[name] = { score: 0, count: 0, syushi: 0 };
+          if(!rivals[name]) rivals[name] = { count: 0, syushi: 0 };
           rivals[name].count += m.scores.length;
           rivals[name].syushi += m.finals[i];
-          m.scores.forEach(row => { rivals[name].score += row[i] || 0; });
         }
       });
     }
@@ -620,22 +762,13 @@ function renderRivals() {
           <span class="font-bold text-sm text-gray-800">👤 ${name}</span>
           <span class="text-[10px] text-gray-500">${r.count} 半荘対戦</span>
         </div>
-        <div class="grid grid-cols-2 gap-2 text-xs bg-white p-2 rounded border border-[#D1D8CD]">
-          <div class="flex justify-between"><span class="text-gray-500">通算収支:</span><span class="font-bold ${r.syushi > 0 ? 'score-pos' : r.syushi < 0 ? 'score-neg' : ''}">${(r.syushi > 0 ? '+' : '') + r.syushi.toLocaleString()}P</span></div>
-          <div class="flex justify-between"><span class="text-gray-500">通算スコア:</span><span class="font-bold">${Math.round(r.score*10)/10}</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-xs flex justify-between">
+          <span class="text-gray-500">相手の通算収支:</span>
+          <span class="font-bold ${r.syushi > 0 ? 'score-pos' : r.syushi < 0 ? 'score-neg' : ''}">${(r.syushi > 0 ? '+' : '') + r.syushi.toLocaleString()}P</span>
         </div>
       </div>
     `;
   }).join('');
-}
-
-function resetForm() {
-  editTargetId = null;
-  document.getElementById('score-rows').innerHTML = '';
-  rowCount = 0;
-  for(let i=0; i<4; i++) addRow();
-  for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';
-  calcTotals();
 }
 
 function showTab(tabName) {
