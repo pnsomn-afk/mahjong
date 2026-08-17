@@ -14,7 +14,7 @@
   .tab-inactive { color: #8C9A8E; }
   .score-pos { color: #1E40AF; }
   .score-neg { color: #DC2626; }
-  input[type="date"] {
+  input[type="date"], input[type="month"] {
     -webkit-appearance: none;
     appearance: none;
     min-height: 38px;
@@ -33,7 +33,7 @@
 <header class="bg-[#E2E6DE] px-4 py-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
     <div class="bg-[#4A5D4E] text-white text-xs px-2 py-1 rounded font-bold">牌</div>
-    <h1 id="header-title" class="font-bold text-lg text-[#2D3748]">スコア入力</h1>
+    <h1 id="header-title" class="font-bold text-lg text-[#2D3748]">ホーム</h1>
   </div>
   <span class="text-xs text-[#8C9A8E] font-medium tracking-wider">MAHJONG SCORE</span>
 </header>
@@ -41,8 +41,89 @@
 <!-- メイン表示領域 -->
 <main id="main-content" class="flex-1 overflow-y-auto p-3 pb-24">
   
-  <!-- 【1. 入力画面】 -->
-  <div id="view-input" class="space-y-3">
+  <!-- 【1. ホーム（戦績・期間別・グラフ）画面】 -->
+  <div id="view-home" class="space-y-3">
+    <!-- 期間切り替えバー -->
+    <div class="card p-2 shadow-sm flex items-center justify-between gap-1 text-xs">
+      <div class="flex bg-gray-200 rounded-lg p-0.5 flex-1">
+        <button onclick="setPeriodFilter('all')" id="btn-period-all" class="flex-1 py-1 rounded font-bold bg-[#4A5D4E] text-white">生涯</button>
+        <button onclick="setPeriodFilter('year')" id="btn-period-year" class="flex-1 py-1 rounded font-bold text-gray-600">年別</button>
+        <button onclick="setPeriodFilter('month')" id="btn-period-month" class="flex-1 py-1 rounded font-bold text-gray-600">月別</button>
+      </div>
+      <div id="period-selector-container" class="hidden">
+        <select id="select-year" onchange="renderHome()" class="hidden bg-white border border-[#D1D8CD] rounded px-2 py-1 font-bold text-xs outline-none"></select>
+        <input type="month" id="select-month" onchange="renderHome()" class="hidden bg-white border border-[#D1D8CD] rounded px-1 py-0.5 font-bold text-xs outline-none min-h-[30px]">
+      </div>
+    </div>
+
+    <!-- 個人戦績カード -->
+    <div class="card p-4 shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-sm text-[#4A5D4E]"><span id="period-title-label">生涯</span>戦績 (<span id="stats-user">自分</span>)</h2>
+        <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline font-medium">名前変更</button>
+      </div>
+      
+      <!-- 着順グリッド -->
+      <div class="grid grid-cols-4 gap-1 text-center mb-3">
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
+          <div class="text-[10px] text-gray-500">1着</div>
+          <div id="st-1st" class="text-base font-bold">0回</div>
+          <div id="st-1st-rate" class="text-[9px] text-gray-400">0%</div>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
+          <div class="text-[10px] text-gray-500">2着</div>
+          <div id="st-2nd" class="text-base font-bold">0回</div>
+          <div id="st-2nd-rate" class="text-[9px] text-gray-400">0%</div>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
+          <div class="text-[10px] text-gray-500">3着</div>
+          <div id="st-3rd" class="text-base font-bold">0回</div>
+          <div id="st-3rd-rate" class="text-[9px] text-gray-400">0%</div>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
+          <div class="text-[10px] text-gray-500">4着</div>
+          <div id="st-4th" class="text-base font-bold">0回</div>
+          <div id="st-4th-rate" class="text-[9px] text-gray-400">0%</div>
+        </div>
+      </div>
+
+      <!-- 統計指標グリッド -->
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">対局数:</span><span id="st-totalhanso" class="font-bold">0 半荘</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between col-span-2">
+          <span class="text-gray-500">総収支(場代込):</span>
+          <span id="st-totalfee" class="font-bold text-sm">0</span>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between">
+          <span class="text-gray-500">素収支(場代無):</span>
+          <span id="st-rawfee" class="font-bold">0</span>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between">
+          <span class="text-gray-500">総チップ:</span>
+          <span id="st-totalchip" class="font-bold">0 枚</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 収支推移グラフ -->
+    <div class="card p-4 shadow-sm">
+      <h3 class="font-bold text-xs text-[#4A5D4E] mb-2"><span id="graph-title-label">生涯</span> 収支推移グラフ</h3>
+      <div class="h-48">
+        <canvas id="chart-syushi"></canvas>
+      </div>
+    </div>
+
+    <!-- 相手別成績へのリンクボタン -->
+    <button onclick="openRivalModal()" class="w-full py-3 card shadow-sm font-bold text-xs text-[#4A5D4E] flex items-center justify-center gap-2 active:bg-gray-100">
+      <span>👥</span><span>対戦相手別の通算成績を確認する</span><span>➔</span>
+    </button>
+  </div>
+
+  <!-- 【2. 入力画面】 -->
+  <div id="view-input" class="space-y-3 hidden">
     <!-- 対局情報・ルール設定 -->
     <div class="card p-3 shadow-sm">
       <div class="flex justify-between items-center cursor-pointer" onclick="toggleConfig()">
@@ -150,7 +231,7 @@
       </button>
     </div>
 
-    <!-- 登録ボタン（クリアを撤廃してフルサイズ化） -->
+    <!-- 登録ボタン -->
     <div class="pt-2">
       <button onclick="saveMatch()" id="btn-save-match" class="w-full py-3.5 rounded-xl btn-main text-base font-bold shadow-md active:opacity-90 flex items-center justify-center gap-2">
         <span>対局結果を登録する</span>
@@ -158,60 +239,25 @@
     </div>
   </div>
 
-  <!-- 【2. ホーム（戦績・グラフ）画面】 -->
-  <div id="view-home" class="space-y-3 hidden">
-    <div class="card p-4 shadow-sm">
-      <div class="flex justify-between items-center mb-3">
-        <h2 class="font-bold text-sm text-[#4A5D4E]">通算戦績 (<span id="stats-user">自分</span>)</h2>
-        <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline">名前変更</button>
-      </div>
-      <div class="grid grid-cols-3 gap-2 text-center mb-3">
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
-          <div class="text-[10px] text-gray-500">1着</div>
-          <div id="st-1st" class="text-base font-bold">0回</div>
-          <div id="st-1st-rate" class="text-[9px] text-gray-400">0%</div>
-        </div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
-          <div class="text-[10px] text-gray-500">2着</div>
-          <div id="st-2nd" class="text-base font-bold">0回</div>
-          <div id="st-2nd-rate" class="text-[9px] text-gray-400">0%</div>
-        </div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
-          <div class="text-[10px] text-gray-500">3着</div>
-          <div id="st-3rd" class="text-base font-bold">0回</div>
-          <div id="st-3rd-rate" class="text-[9px] text-gray-400">0%</div>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">総収支:</span><span id="st-totalfee" class="font-bold">0</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
-      </div>
-    </div>
-
-    <!-- 収支推移グラフ -->
-    <div class="card p-4 shadow-sm">
-      <h3 class="font-bold text-xs text-[#4A5D4E] mb-2">収支推移グラフ</h3>
-      <div class="h-48">
-        <canvas id="chart-syushi"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- 【3. 相手別成績画面】 -->
-  <div id="view-rival" class="space-y-3 hidden">
-    <h2 class="font-bold text-sm text-[#4A5D4E] px-1">対戦相手ごとの通算成績</h2>
-    <div id="rival-list" class="space-y-2"></div>
-  </div>
-
-  <!-- 【4. 履歴画面】 -->
+  <!-- 【3. 履歴画面】 -->
   <div id="view-history" class="space-y-3 hidden">
     <h2 class="font-bold text-sm text-[#4A5D4E] px-1">過去の対局履歴</h2>
-    <div id="history-list" class="space-y-2"></div>
+    <div id="history-list" class="space-y-2.5"></div>
   </div>
 
 </main>
+
+<!-- 相手別成績モーダル -->
+<div id="modal-rival" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-3 shadow-xl max-h-[80vh] flex flex-col">
+    <div class="flex justify-between items-center border-b pb-2">
+      <h3 class="font-bold text-sm text-gray-800">👥 対戦相手ごとの通算成績</h3>
+      <button onclick="closeRivalModal()" class="text-gray-400 text-sm font-bold px-2">✕</button>
+    </div>
+    <div id="rival-list" class="space-y-2 overflow-y-auto flex-1 pr-1"></div>
+    <button onclick="closeRivalModal()" class="w-full py-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold">閉じる</button>
+  </div>
+</div>
 
 <!-- 名前選択モーダル -->
 <div id="modal-name-select" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
@@ -222,16 +268,13 @@
   </div>
 </div>
 
-<!-- 下部ナビゲーション -->
+<!-- 下部ナビゲーション（左端をホームに変更） -->
 <nav class="bg-[#F7F9F6] border-t border-[#D1D8CD] fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around z-30">
-  <button onclick="showTab('input')" id="tab-input" class="tab-active flex flex-col items-center flex-1">
-    <span class="text-xl">✏️</span><span class="text-[10px] mt-0.5">入力</span>
-  </button>
-  <button onclick="showTab('home')" id="tab-home" class="tab-inactive flex flex-col items-center flex-1">
+  <button onclick="showTab('home')" id="tab-home" class="tab-active flex flex-col items-center flex-1">
     <span class="text-xl">🏠</span><span class="text-[10px] mt-0.5">ホーム</span>
   </button>
-  <button onclick="showTab('rival')" id="tab-rival" class="tab-inactive flex flex-col items-center flex-1">
-    <span class="text-xl">👥</span><span class="text-[10px] mt-0.5">相手別</span>
+  <button onclick="showTab('input')" id="tab-input" class="tab-inactive flex flex-col items-center flex-1">
+    <span class="text-xl">✏️</span><span class="text-[10px] mt-0.5">入力</span>
   </button>
   <button onclick="showTab('history')" id="tab-history" class="tab-inactive flex flex-col items-center flex-1">
     <span class="text-xl">📜</span><span class="text-[10px] mt-0.5">履歴</span>
@@ -244,22 +287,31 @@ let rowCount = 0;
 let editTargetId = null;
 let chartInstance = null;
 let currentSelectingPIdx = null;
+let currentPeriod = 'all'; // 'all', 'year', 'month'
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 自分の名前の読み込み
   const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
   document.getElementById('pname-0').value = savedMyName;
 
-  // 今日の日付セット
-  document.getElementById('cfg-date').valueAsDate = new Date();
-  
-  // 初期行4つ
+  setTodayDate();
   for(let i=0; i<4; i++) addRow();
   
+  initPeriodSelectors();
   renderHistory();
   renderHome();
-  renderRivals();
 });
+
+function getTodayString() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function setTodayDate() {
+  document.getElementById('cfg-date').value = getTodayString();
+}
 
 function toggleConfig() {
   const body = document.getElementById('config-body');
@@ -272,10 +324,20 @@ function changeMyNameModal() {
   const current = localStorage.getItem('mahjong_my_name') || '自分';
   const newName = prompt('自分の名前（固定）を入力してください:', current);
   if(newName && newName.trim() !== '') {
-    localStorage.setItem('mahjong_my_name', newName.trim());
-    document.getElementById('pname-0').value = newName.trim();
+    const trimmed = newName.trim();
+    localStorage.setItem('mahjong_my_name', trimmed);
+    document.getElementById('pname-0').value = trimmed;
+    
+    // 過去履歴のP1名前も一括更新
+    let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
+    history = history.map(m => {
+      if(m.names && m.names.length > 0) m.names[0] = trimmed;
+      return m;
+    });
+    localStorage.setItem('mahjong_history', JSON.stringify(history));
+
     renderHome();
-    renderRivals();
+    renderHistory();
   }
 }
 
@@ -325,7 +387,6 @@ function removeRow(rId) {
   }
 }
 
-// スコア自動補完（修正時の再補完にも完全対応）
 function autoCompleteScore(rId, pIdx) {
   let filled = 0;
   let currentSum = 0;
@@ -341,7 +402,6 @@ function autoCompleteScore(rId, pIdx) {
       }
     }
   }
-  // 他の全員が入力済みであれば、現在のセルを合計0の差分で自動上書き
   if(filled === pCount - 1) {
     const complement = Math.round((-currentSum) * 10) / 10;
     const selfInput = document.getElementById(`score-${rId}-${pIdx}`);
@@ -388,7 +448,6 @@ function recheckTobiAll() {
   calcTotals();
 }
 
-// チップ自動補完
 function autoCompleteChip(pIdx) {
   let filled = 0;
   let currentSum = 0;
@@ -413,7 +472,7 @@ function autoCompleteChip(pIdx) {
   }
 }
 
-// 全体集計とゲーム代計算
+// 集計と新端数分配ロジック
 function calcTotals() {
   const rate = parseFloat(document.getElementById('cfg-rate').value) || 0;
   const chipRate = parseFloat(document.getElementById('cfg-chip').value) || 0;
@@ -444,24 +503,22 @@ function calcTotals() {
     syuEl.className = `py-2 font-bold ${syushi[p] > 0 ? 'score-pos' : syushi[p] < 0 ? 'score-neg' : ''}`;
   }
 
-  // ゲーム代の配分（100円単位等分、端数は1位負担）
+  // ゲーム代分配（端数は1位、2位、3位の順で100円ずつ負担）
   let finalSyushi = [...syushi];
   if(gameFee > 0) {
     const baseFeePerPerson = Math.floor(gameFee / pCount / 100) * 100;
-    const remainder = gameFee - (baseFeePerPerson * pCount);
-    
-    let maxVal = -Infinity;
-    let topIdx = 0;
-    for(let p=0; p<pCount; p++) {
-      if(syushi[p] > maxVal) {
-        maxVal = syushi[p];
-        topIdx = p;
-      }
-    }
+    const remainder = gameFee - (baseFeePerPerson * pCount); // 100, 200, 300など
+    const extraPeopleCount = Math.round(remainder / 100);
+
+    // 順位付け (スコア降順)
+    let ranking = [0,1,2,3].slice(0, pCount).sort((a,b) => syushi[b] - syushi[a]);
 
     for(let p=0; p<pCount; p++) {
       let deduction = baseFeePerPerson;
-      if(p === topIdx) deduction += remainder;
+      const rankPos = ranking.indexOf(p); // 0=1位, 1=2位...
+      if(rankPos < extraPeopleCount) {
+        deduction += 100;
+      }
       finalSyushi[p] -= deduction;
     }
   }
@@ -473,7 +530,6 @@ function calcTotals() {
   }
 }
 
-// 名前選択モーダル処理
 function openNameSelector(pIdx) {
   currentSelectingPIdx = pIdx;
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -510,7 +566,6 @@ function closeNameSelector() {
   currentSelectingPIdx = null;
 }
 
-// データ保存
 function saveMatch() {
   const date = document.getElementById('cfg-date').value;
   const names = [0,1,2,3].slice(0, pCount).map(i => document.getElementById(`pname-${i}`).value || `P${i+1}`);
@@ -535,6 +590,10 @@ function saveMatch() {
   }
 
   const chips = [0,1,2,3].slice(0, pCount).map(i => parseInt(document.getElementById(`chip-${i}`).value) || 0);
+  const rawSyushi = [0,1,2,3].slice(0, pCount).map(i => {
+    const txt = document.getElementById(`syushi-${i}`).innerText.replace(/[^0-9.-]/g, '');
+    return parseFloat(txt) || 0;
+  });
   const finals = [0,1,2,3].slice(0, pCount).map(i => {
     const txt = document.getElementById(`final-${i}`).innerText.replace(/[^0-9.-]/g, '');
     return parseFloat(txt) || 0;
@@ -547,6 +606,7 @@ function saveMatch() {
     names,
     scores,
     chips,
+    rawSyushi,
     finals,
     rate: parseFloat(document.getElementById('cfg-rate').value) || 100,
     chipRate: parseFloat(document.getElementById('cfg-chip').value) || 300,
@@ -565,53 +625,79 @@ function saveMatch() {
 
   alert('登録が完了しました。');
   initNewMatchSheet();
+  initPeriodSelectors();
   renderHistory();
   renderHome();
-  renderRivals();
   showTab('history');
 }
 
-// 登録後に次のゲーム用のクリーンなシートを用意
 function initNewMatchSheet() {
   editTargetId = null;
   document.getElementById('score-rows').innerHTML = '';
   rowCount = 0;
+  setTodayDate();
   for(let i=0; i<4; i++) addRow();
   for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';
   document.getElementById('cfg-gamefee').value = '0';
   calcTotals();
 }
 
-// 履歴の描画
+// 履歴一覧の描画（ミニスタッツ＋点数グリッド）
 function renderHistory() {
   const list = document.getElementById('history-list');
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   if(history.length === 0) {
-    list.innerHTML = '<div class="text-center text-xs text-gray-400 py-6">対局履歴はありません</div>';
+    list.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">対局履歴はありません</div>';
     return;
   }
 
-  list.innerHTML = history.map(m => `
-    <div class="card p-3 shadow-sm space-y-2">
-      <div class="flex justify-between items-center text-xs">
-        <span class="font-bold text-gray-700">${m.date} (${m.pCount}人・${m.scores.length}半荘)</span>
-        <div class="space-x-3">
-          <button onclick="editMatch(${m.id})" class="text-blue-600 font-bold hover:underline">編集</button>
-          <button onclick="deleteMatch(${m.id})" class="text-red-500 font-bold hover:underline">削除</button>
+  list.innerHTML = history.map(m => {
+    // 自分の着順内訳計算
+    let myRanks = [0, 0, 0, 0];
+    m.scores.forEach(row => {
+      let sorted = [...row].sort((a,b) => b-a);
+      let rank = sorted.indexOf(row[0]);
+      if(rank >= 0 && rank < 4) myRanks[rank]++;
+    });
+    const totalH = m.scores.length;
+    const avgRank = totalH ? ((myRanks[0]*1 + myRanks[1]*2 + myRanks[2]*3 + myRanks[3]*4) / totalH).toFixed(2) : '0.00';
+
+    return `
+      <div class="card p-3 shadow-sm space-y-2.5">
+        <div class="flex justify-between items-center text-xs border-b border-gray-200/60 pb-1.5">
+          <span class="font-bold text-gray-800">${m.date} (${m.pCount}麻・${totalH}半荘)</span>
+          <div class="space-x-3">
+            <button onclick="editMatch(${m.id})" class="text-blue-600 font-bold hover:underline">編集</button>
+            <button onclick="deleteMatch(${m.id})" class="text-red-500 font-bold hover:underline">削除</button>
+          </div>
+        </div>
+
+        <!-- 自分のミニスタッツ -->
+        <div class="bg-gray-100/70 p-2 rounded-lg text-xs flex justify-between items-center text-gray-700">
+          <div class="space-x-2">
+            <span class="font-bold text-[#4A5D4E]">自分戦績:</span>
+            <span>1着<b class="text-gray-900">${myRanks[0]}</b></span>
+            <span>2着<b class="text-gray-900">${myRanks[1]}</b></span>
+            <span>3着<b class="text-gray-900">${myRanks[2]}</b></span>
+            ${m.pCount === 4 ? `<span>4着<b class="text-gray-900">${myRanks[3]}</b></span>` : ''}
+          </div>
+          <div>平均 <b class="text-[#4A5D4E]">${avgRank}</b></div>
+        </div>
+
+        <!-- 全員の点数グリッド -->
+        <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2 rounded-lg border border-[#D1D8CD] text-xs">
+          ${m.names.map((n, i) => `
+            <div>
+              <div class="text-gray-500 text-[10px] truncate font-medium">${n}</div>
+              <div class="font-bold ${m.finals[i] > 0 ? 'score-pos' : m.finals[i] < 0 ? 'score-neg' : ''}">
+                ${(m.finals[i] > 0 ? '+' : '') + m.finals[i].toLocaleString()}
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
-      <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2 rounded border border-[#D1D8CD] text-xs">
-        ${m.names.map((n, i) => `
-          <div>
-            <div class="text-gray-500 text-[10px] truncate font-medium">${n}</div>
-            <div class="font-bold ${m.finals[i] > 0 ? 'score-pos' : m.finals[i] < 0 ? 'score-neg' : ''}">
-              ${(m.finals[i] > 0 ? '+' : '') + m.finals[i].toLocaleString()}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function editMatch(id) {
@@ -654,57 +740,127 @@ function deleteMatch(id) {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   history = history.filter(m => m.id !== id);
   localStorage.setItem('mahjong_history', JSON.stringify(history));
+  initPeriodSelectors();
   renderHistory();
   renderHome();
-  renderRivals();
 }
 
+// 期間セレクタの初期化
+function initPeriodSelectors() {
+  const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
+  const years = Array.from(new Set(history.map(m => m.date.slice(0, 4)))).sort().reverse();
+  const selectY = document.getElementById('select-year');
+  if(years.length > 0) {
+    selectY.innerHTML = years.map(y => `<option value="${y}">${y}年</option>`).join('');
+  } else {
+    selectY.innerHTML = `<option value="${new Date().getFullYear()}">${new Date().getFullYear()}年</option>`;
+  }
+  
+  const now = new Date();
+  document.getElementById('select-month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}`;
+}
+
+function setPeriodFilter(period) {
+  currentPeriod = period;
+  ['all', 'year', 'month'].forEach(p => {
+    const btn = document.getElementById(`btn-period-${p}`);
+    btn.className = p === period ? 'flex-1 py-1 rounded font-bold bg-[#4A5D4E] text-white' : 'flex-1 py-1 rounded font-bold text-gray-600';
+  });
+
+  const container = document.getElementById('period-selector-container');
+  const selY = document.getElementById('select-year');
+  const selM = document.getElementById('select-month');
+
+  container.classList.toggle('hidden', period === 'all');
+  selY.classList.toggle('hidden', period !== 'year');
+  selM.classList.toggle('hidden', period !== 'month');
+
+  const labels = { all: '生涯', year: '年別', month: '月別' };
+  document.getElementById('period-title-label').innerText = labels[period];
+  document.getElementById('graph-title-label').innerText = labels[period];
+
+  renderHome();
+}
+
+// ホーム戦績・グラフ更新
 function renderHome() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
   document.getElementById('stats-user').innerText = myName;
 
+  const targetYear = document.getElementById('select-year').value;
+  const targetMonth = document.getElementById('select-month').value;
+
+  // フィルタリング
+  const filteredMatches = history.filter(m => {
+    if(currentPeriod === 'year') return m.date.startsWith(targetYear);
+    if(currentPeriod === 'month') return m.date.startsWith(targetMonth);
+    return true;
+  });
+
   let posCounts = [0, 0, 0, 0];
   let totalFee = 0;
+  let rawFee = 0;
+  let totalChips = 0;
   let tobiCount = 0;
   let totalHanso = 0;
   let graphLabels = [];
   let graphData = [];
   let cumSum = 0;
 
-  history.slice().reverse().forEach(m => {
-    const myIdx = m.names.indexOf(myName);
-    if(myIdx !== -1) {
-      const myFin = m.finals[myIdx];
-      totalFee += myFin;
-      cumSum += myFin;
-      graphLabels.push(m.date.slice(5));
-      graphData.push(cumSum);
+  filteredMatches.slice().reverse().forEach(m => {
+    const myFin = m.finals[0] || 0;
+    const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : myFin;
+    const myChip = (m.chips && m.chips[0] !== undefined) ? m.chips[0] : 0;
 
-      m.scores.forEach(row => {
-        totalHanso++;
-        let sorted = [...row].sort((a,b) => b-a);
-        let rank = sorted.indexOf(row[myIdx]);
-        if(rank >= 0 && rank < 4) posCounts[rank]++;
-        if(row[myIdx] <= (m.tobiLimit || -50)) tobiCount++;
-      });
-    }
+    totalFee += myFin;
+    rawFee += myRaw;
+    totalChips += myChip;
+    cumSum += myFin;
+    graphLabels.push(m.date.slice(5));
+    graphData.push(cumSum);
+
+    m.scores.forEach(row => {
+      totalHanso++;
+      let sorted = [...row].sort((a,b) => b-a);
+      let rank = sorted.indexOf(row[0]);
+      if(rank >= 0 && rank < 4) posCounts[rank]++;
+      if(row[0] <= (m.tobiLimit || -50)) tobiCount++;
+    });
   });
 
   const totalRanks = posCounts.reduce((a,b)=>a+b, 0);
   document.getElementById('st-1st').innerText = `${posCounts[0]}回`;
   document.getElementById('st-2nd').innerText = `${posCounts[1]}回`;
   document.getElementById('st-3rd').innerText = `${posCounts[2]}回`;
+  document.getElementById('st-4th').innerText = `${posCounts[3]}回`;
+  
   document.getElementById('st-1st-rate').innerText = totalRanks ? `${Math.round(posCounts[0]/totalRanks*100)}%` : '0%';
   document.getElementById('st-2nd-rate').innerText = totalRanks ? `${Math.round(posCounts[1]/totalRanks*100)}%` : '0%';
   document.getElementById('st-3rd-rate').innerText = totalRanks ? `${Math.round(posCounts[2]/totalRanks*100)}%` : '0%';
+  document.getElementById('st-4th-rate').innerText = totalRanks ? `${Math.round(posCounts[3]/totalRanks*100)}%` : '0%';
+
+  document.getElementById('st-totalhanso').innerText = `${totalHanso} 半荘`;
   document.getElementById('st-toprate').innerText = totalRanks ? `${Math.round(posCounts[0]/totalRanks*100)}%` : '0%';
   
   const avg = totalRanks ? ((posCounts[0]*1 + posCounts[1]*2 + posCounts[2]*3 + posCounts[3]*4) / totalRanks).toFixed(2) : '0.00';
   document.getElementById('st-avgpos').innerText = avg;
-  document.getElementById('st-totalfee').innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
+  
+  const feeEl = document.getElementById('st-totalfee');
+  feeEl.innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
+  feeEl.className = `font-bold text-sm ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
+
+  const rawEl = document.getElementById('st-rawfee');
+  rawEl.innerText = (rawFee > 0 ? '+' : '') + rawFee.toLocaleString();
+  rawEl.className = `font-bold ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
+
+  const chipEl = document.getElementById('st-totalchip');
+  chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
+  chipEl.className = `font-bold ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
+
   document.getElementById('st-tobirate').innerText = totalHanso ? `${Math.round(tobiCount/totalHanso*100)}%` : '0%';
 
+  // グラフ描画
   const ctx = document.getElementById('chart-syushi').getContext('2d');
   if(chartInstance) chartInstance.destroy();
   chartInstance = new Chart(ctx, {
@@ -729,58 +885,60 @@ function renderHome() {
   });
 }
 
-function renderRivals() {
+// 相手別成績モーダル
+function openRivalModal() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
   const list = document.getElementById('rival-list');
   let rivals = {};
 
   history.forEach(m => {
-    const myIdx = m.names.indexOf(myName);
-    if(myIdx !== -1) {
-      m.names.forEach((name, i) => {
-        if(name !== myName) {
-          if(!rivals[name]) rivals[name] = { count: 0, syushi: 0 };
-          rivals[name].count += m.scores.length;
-          rivals[name].syushi += m.finals[i];
-        }
-      });
-    }
+    m.names.forEach((name, i) => {
+      if(i !== 0 && name && name !== myName) {
+        if(!rivals[name]) rivals[name] = { count: 0, syushi: 0 };
+        rivals[name].count += m.scores.length;
+        rivals[name].syushi += (m.finals[i] || 0);
+      }
+    });
   });
 
   const names = Object.keys(rivals);
   if(names.length === 0) {
-    list.innerHTML = '<div class="text-center text-xs text-gray-400 py-6">対戦データがありません</div>';
-    return;
+    list.innerHTML = '<div class="text-center text-xs text-gray-400 py-6">対戦相手データがありません</div>';
+  } else {
+    list.innerHTML = names.map(name => {
+      const r = rivals[name];
+      return `
+        <div class="bg-gray-50 p-2.5 rounded-lg border border-[#D1D8CD] space-y-1 text-xs">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-gray-800">👤 ${name}</span>
+            <span class="text-[10px] text-gray-500">${r.count} 半荘同卓</span>
+          </div>
+          <div class="flex justify-between bg-white p-1.5 rounded border border-gray-200">
+            <span class="text-gray-500">相手の通算収支:</span>
+            <span class="font-bold ${r.syushi > 0 ? 'score-pos' : r.syushi < 0 ? 'score-neg' : ''}">${(r.syushi > 0 ? '+' : '') + r.syushi.toLocaleString()}P</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
-  list.innerHTML = names.map(name => {
-    const r = rivals[name];
-    return `
-      <div class="card p-3 shadow-sm">
-        <div class="flex justify-between items-center mb-2">
-          <span class="font-bold text-sm text-gray-800">👤 ${name}</span>
-          <span class="text-[10px] text-gray-500">${r.count} 半荘対戦</span>
-        </div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-xs flex justify-between">
-          <span class="text-gray-500">相手の通算収支:</span>
-          <span class="font-bold ${r.syushi > 0 ? 'score-pos' : r.syushi < 0 ? 'score-neg' : ''}">${(r.syushi > 0 ? '+' : '') + r.syushi.toLocaleString()}P</span>
-        </div>
-      </div>
-    `;
-  }).join('');
+  document.getElementById('modal-rival').classList.remove('hidden');
+}
+
+function closeRivalModal() {
+  document.getElementById('modal-rival').classList.add('hidden');
 }
 
 function showTab(tabName) {
-  ['input', 'home', 'rival', 'history'].forEach(t => {
+  ['home', 'input', 'history'].forEach(t => {
     document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
     const tabBtn = document.getElementById(`tab-${t}`);
     tabBtn.className = t === tabName ? 'tab-active flex flex-col items-center flex-1' : 'tab-inactive flex flex-col items-center flex-1';
   });
-  const titles = { input: 'スコア入力', home: '通算戦績', rival: '相手別成績', history: '対局履歴' };
+  const titles = { home: 'ホーム', input: 'スコア入力', history: '対局履歴' };
   document.getElementById('header-title').innerText = titles[tabName];
   if(tabName === 'home') renderHome();
-  if(tabName === 'rival') renderRivals();
   if(tabName === 'history') renderHistory();
 }
 </script>
