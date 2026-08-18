@@ -98,7 +98,7 @@
         <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline font-medium">名前変更</button>
       </div>
       
-      <!-- 着順グリッド（小数点第1位表示） -->
+      <!-- 着順グリッド -->
       <div id="rank-grid" class="grid grid-cols-3 gap-1 text-center mb-3">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">1着</div>
@@ -123,7 +123,7 @@
       </div>
 
       <!-- 統計指標グリッド -->
-      <div class="grid grid-cols-3 gap-1.5 text-xs mb-2">
+      <div class="grid grid-cols-3 gap-1.5 text-xs mb-2.5">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
           <div class="text-[10px] text-gray-500 mb-0.5">対局数</div>
           <div id="st-totalhanso" class="font-bold text-sm">0 半荘</div>
@@ -138,23 +138,31 @@
         </div>
       </div>
 
-      <!-- 収支・チップグリッド -->
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="bg-white p-2.5 rounded-lg border border-[#D1D8CD] flex justify-between items-center col-span-2">
+      <!-- メイン収支 ＆ サブ3項目（場代込・総スコア・総チップ） -->
+      <div class="space-y-1.5">
+        <!-- メイン：総収支(場代なし) -->
+        <div class="bg-white p-3 rounded-lg border border-[#D1D8CD] flex justify-between items-center shadow-xs">
           <div>
-            <span class="text-gray-700 font-bold">総収支 (場代なし):</span>
-            <span class="text-[10px] text-gray-400 block">※素点＋チップ</span>
+            <span class="text-gray-800 font-black text-sm">総収支 (場代なし)</span>
+            <span class="text-[9px] text-gray-400 block leading-tight">※素点＋チップの純粋成績</span>
           </div>
-          <span id="st-rawfee" class="font-bold text-base">0</span>
+          <span id="st-rawfee" class="font-black text-lg">0</span>
         </div>
 
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between">
-          <span class="text-gray-500">場代込収支:</span>
-          <span id="st-totalfee" class="font-bold">0</span>
-        </div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between">
-          <span class="text-gray-500">総チップ:</span>
-          <span id="st-totalchip" class="font-bold">0 枚</span>
+        <!-- サブ3項目グリッド -->
+        <div class="grid grid-cols-3 gap-1.5 text-xs">
+          <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
+            <div class="text-[9px] text-gray-500 mb-0.5 truncate">場代込収支</div>
+            <div id="st-totalfee" class="font-bold text-xs">0</div>
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
+            <div class="text-[9px] text-gray-500 mb-0.5 truncate">総スコア</div>
+            <div id="st-totalscore" class="font-bold text-xs">0.0</div>
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
+            <div class="text-[9px] text-gray-500 mb-0.5 truncate">総チップ</div>
+            <div id="st-totalchip" class="font-bold text-xs">0 枚</div>
+          </div>
         </div>
       </div>
     </div>
@@ -368,7 +376,7 @@
           </button>
         </div>
 
-        <!-- CSV形式ガイド（アコーディオン：実名を排除したダミー名表記） -->
+        <!-- CSV形式ガイド（アコーディオン） -->
         <div id="csv-format-guide" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-[10px] space-y-2 text-gray-600 font-mono">
           <div class="font-bold text-gray-800 border-b pb-1">【CSV列順序（全27列）】</div>
           <div class="leading-relaxed">
@@ -1286,6 +1294,7 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
+// ホーム戦績・総スコアを含めた集計
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1306,6 +1315,7 @@ function renderHome() {
   let posCounts = [0, 0, 0, 0];
   let totalFee = 0;
   let rawFee = 0;
+  let totalScore = 0;
   let totalChips = 0;
   let totalHanso = 0;
 
@@ -1313,9 +1323,18 @@ function renderHome() {
     const myFin = m.finals[0] || 0;
     const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : myFin;
     const myChip = (m.chips && m.chips[0] !== undefined) ? m.chips[0] : 0;
+    
+    // 自分の素点計
+    let myScore = 0;
+    if(m.totalPtsHistory && m.totalPtsHistory[0] !== undefined) {
+      myScore = m.totalPtsHistory[0];
+    } else {
+      m.scores.forEach(r => { if(r[0] !== null) myScore += (r[0] || 0); });
+    }
 
     totalFee += myFin;
     rawFee += myRaw;
+    totalScore += myScore;
     totalChips += myChip;
 
     if(m.ranksHistory) {
@@ -1327,7 +1346,7 @@ function renderHome() {
           totalHanso++;
           let sorted = [...row].filter(v => v !== null).sort((a,b) => b-a);
           let rank = sorted.indexOf(row[0]);
-          if(rank >= 0 && rank < 4) posCounts[rank]++;
+          if(rank >= 0 && rank < 4) myRanks[rank]++;
         }
       });
     }
@@ -1350,18 +1369,28 @@ function renderHome() {
   const avg = totalRanks ? ((posCounts[0]*1 + posCounts[1]*2 + posCounts[2]*3 + posCounts[3]*4) / totalRanks).toFixed(2) : '0.00';
   document.getElementById('st-avgpos').innerText = avg;
   
+  // メイン：総収支 (場代なし)
   const rawEl = document.getElementById('st-rawfee');
   rawEl.innerText = (rawFee > 0 ? '+' : '') + rawFee.toLocaleString();
-  rawEl.className = `font-bold text-base ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
+  rawEl.className = `font-black text-lg ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
 
+  // サブ1：場代込収支
   const feeEl = document.getElementById('st-totalfee');
   feeEl.innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
-  feeEl.className = `font-bold ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
+  feeEl.className = `font-bold text-xs ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
 
+  // サブ2：総スコア（素点計）
+  const totalScoreRounded = Math.round(totalScore * 10) / 10;
+  const scoreEl = document.getElementById('st-totalscore');
+  scoreEl.innerText = (totalScoreRounded > 0 ? '+' : '') + totalScoreRounded.toFixed(1);
+  scoreEl.className = `font-bold text-xs ${totalScoreRounded > 0 ? 'score-pos' : totalScoreRounded < 0 ? 'score-neg' : ''}`;
+
+  // サブ3：総チップ
   const chipEl = document.getElementById('st-totalchip');
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
-  chipEl.className = `font-bold ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
+  chipEl.className = `font-bold text-xs ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
 
+  // 複合グラフ描画
   let graphLabels = [];
   let periodBarData = [];
   let cumulativeLineData = [];
