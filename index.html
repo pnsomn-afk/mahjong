@@ -29,7 +29,6 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
-<!-- ヘッダー -->
 <header class="bg-[#E2E6DE] px-4 py-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
     <div class="bg-[#4A5D4E] text-white text-xs px-2 py-1 rounded font-bold">牌</div>
@@ -40,20 +39,16 @@
   </div>
 </header>
 
-<!-- メイン表示領域 -->
 <main id="main-content" class="flex-1 overflow-y-auto p-3 pb-24">
   
-  <!-- 【1. ホーム（戦績・期間別・グラフ）画面】 -->
+  <!-- ホーム画面 -->
   <div id="view-home" class="space-y-3">
-    
-    <!-- 麻雀種別タブ -->
     <div class="flex bg-gray-200/80 rounded-lg p-0.5 text-xs">
       <button onclick="setRuleFilter('all')" id="btn-rule-all" class="flex-1 py-1.5 rounded-md font-bold text-gray-600">全体</button>
       <button onclick="setRuleFilter(3)" id="btn-rule-3" class="flex-1 py-1.5 rounded-md font-bold bg-[#4A5D4E] text-white">3人麻雀</button>
       <button onclick="setRuleFilter(4)" id="btn-rule-4" class="flex-1 py-1.5 rounded-md font-bold text-gray-600">4人麻雀</button>
     </div>
 
-    <!-- 期間切り替えバー -->
     <div class="card p-2 shadow-sm flex items-center justify-between gap-1 text-xs">
       <div class="flex bg-gray-200 rounded-lg p-0.5 flex-1">
         <button onclick="setPeriodFilter('all')" id="btn-period-all" class="flex-1 py-1 rounded font-bold bg-[#4A5D4E] text-white">生涯</button>
@@ -66,14 +61,12 @@
       </div>
     </div>
 
-    <!-- 個人戦績カード -->
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-3">
         <h2 class="font-bold text-sm text-[#4A5D4E]"><span id="stats-rule-label">3人麻雀</span>・<span id="period-title-label">生涯</span>戦績 (<span id="stats-user">自分</span>)</h2>
         <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline font-medium">名前変更</button>
       </div>
       
-      <!-- 着順グリッド -->
       <div id="rank-grid" class="grid grid-cols-3 gap-1 text-center mb-3">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">1着</div>
@@ -97,14 +90,12 @@
         </div>
       </div>
 
-      <!-- 統計指標グリッド（メインを素収支に配置） -->
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">対局数:</span><span id="st-totalhanso" class="font-bold">0 半荘</span></div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
         
-        <!-- メイン：素収支 -->
         <div class="bg-white p-2.5 rounded-lg border border-[#D1D8CD] flex justify-between items-center col-span-2">
           <div>
             <span class="text-gray-700 font-bold">総収支 (場代なし):</span>
@@ -124,7 +115,6 @@
       </div>
     </div>
 
-    <!-- 収支推移グラフ（場代なし基準） -->
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-2">
         <h3 class="font-bold text-xs text-[#4A5D4E]"><span id="graph-title-label">生涯</span> 収支推移グラフ</h3>
@@ -135,15 +125,13 @@
       </div>
     </div>
 
-    <!-- 相手別成績ボタン -->
     <button onclick="openRivalModal()" class="w-full py-3 card shadow-sm font-bold text-xs text-[#4A5D4E] flex items-center justify-center gap-2 active:bg-gray-100">
       <span>👥</span><span>対戦相手別の通算成績を確認する</span><span>➔</span>
     </button>
   </div>
 
-  <!-- 【2. 入力画面】 -->
+  <!-- スコア入力画面 -->
   <div id="view-input" class="space-y-3 hidden">
-    <!-- 対局情報・ルール設定 -->
     <div class="card p-3 shadow-sm">
       <div class="flex justify-between items-center cursor-pointer" onclick="toggleConfig()">
         <span class="font-bold text-sm text-[#4A5D4E]">対局情報・ルール設定</span>
@@ -180,7 +168,6 @@
       </div>
     </div>
 
-    <!-- スコア入力シート -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
         <thead>
@@ -244,13 +231,11 @@
         </tfoot>
       </table>
 
-      <!-- 行追加ボタン -->
       <button onclick="addRow()" class="w-full mt-3 py-2.5 border border-dashed border-[#8C9A8E] text-[#4A5D4E] rounded-lg text-xs font-bold bg-white active:bg-gray-100 flex items-center justify-center gap-1">
         <span>＋</span><span>半荘を追加</span>
       </button>
     </div>
 
-    <!-- 登録ボタン -->
     <div class="pt-2">
       <button onclick="saveMatch()" id="btn-save-match" class="w-full py-3.5 rounded-xl btn-main text-base font-bold shadow-md active:opacity-90 flex items-center justify-center gap-2">
         <span>対局結果を登録する</span>
@@ -258,7 +243,7 @@
     </div>
   </div>
 
-  <!-- 【3. 履歴画面】 -->
+  <!-- 履歴画面 -->
   <div id="view-history" class="space-y-3 hidden">
     <h2 class="font-bold text-sm text-[#4A5D4E] px-1">過去の対局履歴</h2>
     <div id="history-list" class="space-y-2.5"></div>
@@ -266,7 +251,7 @@
 
 </main>
 
-<!-- 設定モーダル（完全版CSV一括インポート対応） -->
+<!-- 設定モーダル -->
 <div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-4 shadow-xl max-h-[90vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -283,13 +268,12 @@
         </div>
       </div>
 
-      <!-- CSVデータ一括インポート -->
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
           <span>📥 過去データ一括インポート (雀簿CSV形式)</span>
         </label>
         <p class="text-[11px] text-gray-500 leading-relaxed">
-          AIが生成したCSVテキストを貼り付けて「登録する」を押してください。素収支・場代・チップ・全員の差分がすべて復元されます。
+          AIが生成したCSVテキストを貼り付けて「登録する」を押してください。素収支・場代・チップ・全員の差分がすべて完全に一致して復元されます。
         </p>
 
         <textarea id="import-csv-textarea" rows="4" placeholder="CSVテキストをここに貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
@@ -298,7 +282,6 @@
         </button>
       </div>
 
-      <!-- データ全消去 -->
       <div class="border-t pt-3 space-y-1">
         <label class="font-bold text-red-600">⚠️ データ初期化</label>
         <p class="text-[10px] text-gray-400">端末に保存された全対局データを完全に削除します。</p>
@@ -312,7 +295,6 @@
   </div>
 </div>
 
-<!-- 相手別成績モーダル -->
 <div id="modal-rival" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-3 shadow-xl max-h-[85vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -324,7 +306,6 @@
   </div>
 </div>
 
-<!-- 名前選択モーダル -->
 <div id="modal-name-select" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
     <h3 class="font-bold text-sm text-gray-800 border-b pb-2">対戦者を選択</h3>
@@ -333,7 +314,6 @@
   </div>
 </div>
 
-<!-- 下部ナビゲーション -->
 <nav class="bg-[#F7F9F6] border-t border-[#D1D8CD] fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around z-30">
   <button onclick="showTab('home')" id="tab-home" class="tab-active flex flex-col items-center flex-1">
     <span class="text-xl">🏠</span><span class="text-[10px] mt-0.5">ホーム</span>
@@ -730,7 +710,7 @@ function initNewMatchSheet() {
   calcTotals();
 }
 
-// 改修版CSV一括インポート（場代の自動逆算＆完全復元）
+// 改修版CSV一括インポート（行スコアを自動均等配分して合計点数を完全一致させる）
 function executeCsvImport() {
   const text = document.getElementById('import-csv-textarea').value.trim();
   if(!text) {
@@ -787,20 +767,32 @@ function executeCsvImport() {
     const fin4 = parseFloat(parts[26]) || 0;
     const finals = ruleCount === 3 ? [fin1, fin2, fin3] : [fin1, fin2, fin3, fin4];
 
-    // 場代の自動逆算：(素収支合計 - 最終収支合計)
     const sumRaw = rawSyushi.reduce((a,b)=>a+b, 0);
     const sumFin = finals.reduce((a,b)=>a+b, 0);
     const calculatedGameFee = Math.max(0, Math.round(sumRaw - sumFin));
 
-    // 着順回数に合わせたダミースコア行生成
+    // 着順回数かつ合計点数を完璧に満たすスコア行を生成
     let dummyScores = [];
-    for(let k=0; k<r1; k++) dummyScores.push(ruleCount === 3 ? [30, -10, -20] : [30, 10, -10, -30]);
-    for(let k=0; k<r2; k++) dummyScores.push(ruleCount === 3 ? [0, 20, -20] : [10, 30, -10, -30]);
-    for(let k=0; k<r3; k++) dummyScores.push(ruleCount === 3 ? [-30, 20, 10] : [-10, 30, 10, -30]);
-    for(let k=0; k<r4; k++) dummyScores.push([ -30, 30, 10, -10 ]);
+    const n = Math.max(1, totalHanso);
     
-    while(dummyScores.length < totalHanso) {
-      dummyScores.push(ruleCount === 3 ? [0, 0, 0] : [0, 0, 0, 0]);
+    // 1半荘あたりのベース点数
+    const avgPts = totalPts.map(p => Math.round((p / n) * 10) / 10);
+
+    for(let k=0; k<n; k++) {
+      let row = [];
+      for(let p=0; p<ruleCount; p++) {
+        row.push(avgPts[p]);
+      }
+      dummyScores.push(row);
+    }
+
+    // 端数を1行目に寄せて合計をCSVと完全一致させる
+    for(let p=0; p<ruleCount; p++) {
+      let curSum = 0;
+      for(let k=0; k<n; k++) curSum += dummyScores[k][p];
+      curSum = Math.round(curSum * 10) / 10;
+      const diff = Math.round((totalPts[p] - curSum) * 10) / 10;
+      dummyScores[0][p] = Math.round((dummyScores[0][p] + diff) * 10) / 10;
     }
 
     const matchData = {
@@ -848,7 +840,6 @@ function clearAllData() {
   }
 }
 
-// 履歴一覧（素収支をメインに表示）
 function renderHistory() {
   const list = document.getElementById('history-list');
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -890,7 +881,6 @@ function renderHistory() {
           <div>平均 <b class="text-[#4A5D4E]">${avgRank}</b></div>
         </div>
 
-        <!-- 全員の素収支（場代なし）をメイン表示 -->
         <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2.5 rounded-lg border border-[#D1D8CD] text-xs">
           ${m.names.map((n, i) => {
             const raw = (m.rawSyushi && m.rawSyushi[i] !== undefined) ? m.rawSyushi[i] : m.finals[i];
@@ -1016,7 +1006,6 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
-// ホーム戦績・グラフ更新（素収支メイン）
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1076,12 +1065,10 @@ function renderHome() {
   const avg = totalRanks ? ((posCounts[0]*1 + posCounts[1]*2 + posCounts[2]*3 + posCounts[3]*4) / totalRanks).toFixed(2) : '0.00';
   document.getElementById('st-avgpos').innerText = avg;
   
-  // 素収支（メイン表示）
   const rawEl = document.getElementById('st-rawfee');
   rawEl.innerText = (rawFee > 0 ? '+' : '') + rawFee.toLocaleString();
   rawEl.className = `font-bold text-base ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
 
-  // 場代込
   const feeEl = document.getElementById('st-totalfee');
   feeEl.innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
   feeEl.className = `font-bold ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
@@ -1092,7 +1079,6 @@ function renderHome() {
 
   document.getElementById('st-tobirate').innerText = totalHanso ? `${Math.round(tobiCount/totalHanso*100)}%` : '0%';
 
-  // グラフデータ生成（素収支ベース）
   let graphLabels = [];
   let graphData = [];
 
@@ -1163,7 +1149,6 @@ function renderHome() {
   });
 }
 
-// 相手別成績（素収支差・スコア差・チップ差）
 function openRivalModal() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1188,15 +1173,12 @@ function openRivalModal() {
         }
         rivals[name].count += m.scores.length;
         
-        // 相手との素収支差
         const oppRaw = (m.rawSyushi && m.rawSyushi[i] !== undefined) ? m.rawSyushi[i] : (m.finals[i] || 0);
         rivals[name].syushiDiff += (myRaw - oppRaw);
 
-        // 相手とのチップ差
         const oppChip = (m.chips && m.chips[i] !== undefined) ? m.chips[i] : 0;
         rivals[name].chipDiff += (myChip - oppChip);
 
-        // 相手とのスコア差
         let oppScore = 0;
         if(m.totalPtsHistory && m.totalPtsHistory[i] !== undefined) {
           oppScore = m.totalPtsHistory[i];
