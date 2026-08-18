@@ -29,26 +29,30 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
+<!-- ヘッダー -->
 <header class="bg-[#E2E6DE] px-4 py-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
     <div class="bg-[#4A5D4E] text-white text-xs px-2 py-1 rounded font-bold">牌</div>
     <h1 id="header-title" class="font-bold text-lg text-[#2D3748]">ホーム</h1>
   </div>
   <div class="flex items-center space-x-3">
-    <button onclick="openSettingsModal()" class="text-sm text-[#4A5D4E] hover:text-gray-800 p-1">⚙️ 設定</button>
+    <button onclick="openSettingsModal()" class="text-sm text-[#4A5D4E] hover:text-gray-800 p-1 font-bold">⚙️ 設定</button>
   </div>
 </header>
 
+<!-- メイン表示領域 -->
 <main id="main-content" class="flex-1 overflow-y-auto p-3 pb-24">
   
-  <!-- ホーム画面 -->
+  <!-- 【1. ホーム画面】 -->
   <div id="view-home" class="space-y-3">
+    <!-- 麻雀種別タブ -->
     <div class="flex bg-gray-200/80 rounded-lg p-0.5 text-xs">
       <button onclick="setRuleFilter('all')" id="btn-rule-all" class="flex-1 py-1.5 rounded-md font-bold text-gray-600">全体</button>
       <button onclick="setRuleFilter(3)" id="btn-rule-3" class="flex-1 py-1.5 rounded-md font-bold bg-[#4A5D4E] text-white">3人麻雀</button>
       <button onclick="setRuleFilter(4)" id="btn-rule-4" class="flex-1 py-1.5 rounded-md font-bold text-gray-600">4人麻雀</button>
     </div>
 
+    <!-- 期間切り替えバー -->
     <div class="card p-2 shadow-sm flex items-center justify-between gap-1 text-xs">
       <div class="flex bg-gray-200 rounded-lg p-0.5 flex-1">
         <button onclick="setPeriodFilter('all')" id="btn-period-all" class="flex-1 py-1 rounded font-bold bg-[#4A5D4E] text-white">生涯</button>
@@ -61,6 +65,7 @@
       </div>
     </div>
 
+    <!-- 個人戦績カード -->
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-3">
         <h2 class="font-bold text-sm text-[#4A5D4E]"><span id="stats-rule-label">3人麻雀</span>・<span id="period-title-label">生涯</span>戦績 (<span id="stats-user">自分</span>)</h2>
@@ -115,6 +120,7 @@
       </div>
     </div>
 
+    <!-- グラフ -->
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-2">
         <h3 class="font-bold text-xs text-[#4A5D4E]"><span id="graph-title-label">生涯</span> 収支推移グラフ</h3>
@@ -130,7 +136,7 @@
     </button>
   </div>
 
-  <!-- スコア入力画面 -->
+  <!-- 【2. 入力画面】 -->
   <div id="view-input" class="space-y-3 hidden">
     <div class="card p-3 shadow-sm">
       <div class="flex justify-between items-center cursor-pointer" onclick="toggleConfig()">
@@ -168,15 +174,14 @@
       </div>
     </div>
 
+    <!-- スコアシート -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
         <thead>
           <tr class="border-b border-[#D1D8CD] text-xs font-bold text-gray-700">
             <th class="py-2 w-8 text-center text-gray-400">半</th>
             <th class="py-2 px-1">
-              <div class="flex items-center justify-center">
-                <input id="pname-0" value="自分" readonly onclick="changeMyNameModal()" class="bg-gray-100/80 border border-transparent rounded px-1 text-center w-full font-bold cursor-pointer">
-              </div>
+              <input id="pname-0" value="自分" readonly onclick="changeMyNameModal()" class="bg-gray-100/80 border border-transparent rounded px-1 text-center w-full font-bold cursor-pointer">
             </th>
             <th class="py-2 px-1">
               <div class="flex items-center justify-center gap-0.5">
@@ -243,7 +248,7 @@
     </div>
   </div>
 
-  <!-- 履歴画面 -->
+  <!-- 【3. 履歴画面】 -->
   <div id="view-history" class="space-y-3 hidden">
     <h2 class="font-bold text-sm text-[#4A5D4E] px-1">過去の対局履歴</h2>
     <div id="history-list" class="space-y-2.5"></div>
@@ -270,13 +275,9 @@
 
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
-          <span>📥 過去データ一括インポート (雀簿CSV形式)</span>
+          <span>📥 過去データ一括インポート (雀簿CSV)</span>
         </label>
-        <p class="text-[11px] text-gray-500 leading-relaxed">
-          AIが生成したCSVテキストを貼り付けて「登録する」を押してください。素収支・場代・チップ・全員の差分がすべて完全に一致して復元されます。
-        </p>
-
-        <textarea id="import-csv-textarea" rows="4" placeholder="CSVテキストをここに貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
+        <textarea id="import-csv-textarea" rows="4" placeholder="生成されたCSVテキストを貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
         <button onclick="executeCsvImport()" class="w-full py-2.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
           データを一括読み込み・登録する
         </button>
@@ -284,7 +285,6 @@
 
       <div class="border-t pt-3 space-y-1">
         <label class="font-bold text-red-600">⚠️ データ初期化</label>
-        <p class="text-[10px] text-gray-400">端末に保存された全対局データを完全に削除します。</p>
         <button onclick="clearAllData()" class="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded font-bold text-xs hover:bg-red-100">
           全データを初期化する
         </button>
@@ -295,6 +295,7 @@
   </div>
 </div>
 
+<!-- 相手別成績モーダル -->
 <div id="modal-rival" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-3 shadow-xl max-h-[85vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -306,6 +307,7 @@
   </div>
 </div>
 
+<!-- 名前選択モーダル -->
 <div id="modal-name-select" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
     <h3 class="font-bold text-sm text-gray-800 border-b pb-2">対戦者を選択</h3>
@@ -314,6 +316,7 @@
   </div>
 </div>
 
+<!-- 下部ナビ -->
 <nav class="bg-[#F7F9F6] border-t border-[#D1D8CD] fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around z-30">
   <button onclick="showTab('home')" id="tab-home" class="tab-active flex flex-col items-center flex-1">
     <span class="text-xl">🏠</span><span class="text-[10px] mt-0.5">ホーム</span>
@@ -666,12 +669,20 @@ function saveMatch() {
     return parseFloat(txt) || 0;
   });
 
+  // 素点計
+  let totalPts = [0,0,0,0].slice(0, pCount);
+  scores.forEach(r => {
+    for(let p=0; p<pCount; p++) totalPts[p] += r[p];
+  });
+  totalPts = totalPts.map(v => Math.round(v * 10) / 10);
+
   const matchData = {
     id: editTargetId || Date.now(),
     date,
     pCount,
     names,
     scores,
+    totalPtsHistory: totalPts,
     chips,
     rawSyushi,
     finals,
@@ -710,7 +721,7 @@ function initNewMatchSheet() {
   calcTotals();
 }
 
-// 改修版CSV一括インポート（行スコアを自動均等配分して合計点数を完全一致させる）
+// 27列CSVの完全インポート処理
 function executeCsvImport() {
   const text = document.getElementById('import-csv-textarea').value.trim();
   if(!text) {
@@ -725,74 +736,64 @@ function executeCsvImport() {
   lines.forEach((line, idx) => {
     const trimmed = line.trim();
     if(!trimmed) return;
-    const parts = trimmed.split(',').map(s => s.trim());
-    if(parts.length < 15) return;
+    const p = trimmed.split(',').map(s => s.trim());
+    if(p.length < 24) return; // 24列以上
 
-    const date = parts[0];
-    const ruleCount = parseInt(parts[1]) || 3;
+    const date = p[0];
+    const ruleCount = parseInt(p[1]) || 3;
     
-    const p1 = parts[2] || '自分';
-    const p2 = parts[3] || '相手1';
-    const p3 = parts[4] || '相手2';
-    const p4 = parts[5] || '相手3';
+    // 3〜6: 名前
+    const p1 = p[2] || '自分';
+    const p2 = p[3] || '相手1';
+    const p3 = p[4] || '相手2';
+    const p4 = p[5] || '相手3';
     const names = ruleCount === 3 ? [p1, p2, p3] : [p1, p2, p3, p4];
 
-    const totalHanso = parseInt(parts[6]) || 1;
-    const r1 = parseInt(parts[7]) || 0;
-    const r2 = parseInt(parts[8]) || 0;
-    const r3 = parseInt(parts[9]) || 0;
-    const r4 = parseInt(parts[10]) || 0;
+    // 7〜11: 対局数・着順
+    const totalHanso = parseInt(p[6]) || 1;
+    const r1 = parseInt(p[7]) || 0;
+    const r2 = parseInt(p[8]) || 0;
+    const r3 = parseInt(p[9]) || 0;
+    const r4 = parseInt(p[10]) || 0;
 
-    const pt1 = parseFloat(parts[11]) || 0;
-    const pt2 = parseFloat(parts[12]) || 0;
-    const pt3 = parseFloat(parts[13]) || 0;
-    const pt4 = parseFloat(parts[14]) || 0;
+    // 12〜15: 素点計
+    const pt1 = parseFloat(p[11]) || 0;
+    const pt2 = parseFloat(p[12]) || 0;
+    const pt3 = parseFloat(p[13]) || 0;
+    const pt4 = parseFloat(p[14]) || 0;
     const totalPts = ruleCount === 3 ? [pt1, pt2, pt3] : [pt1, pt2, pt3, pt4];
 
-    const c1 = parseInt(parts[15]) || 0;
-    const c2 = parseInt(parts[16]) || 0;
-    const c3 = parseInt(parts[17]) || 0;
-    const c4 = parseInt(parts[18]) || 0;
+    // 16〜19: チップ
+    const c1 = parseInt(p[15]) || 0;
+    const c2 = parseInt(p[16]) || 0;
+    const c3 = parseInt(p[17]) || 0;
+    const c4 = parseInt(p[18]) || 0;
     const chips = ruleCount === 3 ? [c1, c2, c3] : [c1, c2, c3, c4];
 
-    const raw1 = parseFloat(parts[19]) || 0;
-    const raw2 = parseFloat(parts[20]) || 0;
-    const raw3 = parseFloat(parts[21]) || 0;
-    const raw4 = parseFloat(parts[22]) || 0;
+    // 20〜23: 素収支
+    const raw1 = parseFloat(p[19]) || 0;
+    const raw2 = parseFloat(p[20]) || 0;
+    const raw3 = parseFloat(p[21]) || 0;
+    const raw4 = parseFloat(p[22]) || 0;
     const rawSyushi = ruleCount === 3 ? [raw1, raw2, raw3] : [raw1, raw2, raw3, raw4];
 
-    const fin1 = parseFloat(parts[23]) || 0;
-    const fin2 = parseFloat(parts[24]) || 0;
-    const fin3 = parseFloat(parts[25]) || 0;
-    const fin4 = parseFloat(parts[26]) || 0;
+    // 24〜27: 最終収支
+    const fin1 = parseFloat(p[23]) || 0;
+    const fin2 = parseFloat(p[24]) || 0;
+    const fin3 = parseFloat(p[25]) || 0;
+    const fin4 = parseFloat(p[26]) || 0;
     const finals = ruleCount === 3 ? [fin1, fin2, fin3] : [fin1, fin2, fin3, fin4];
 
+    // 場代の逆算
     const sumRaw = rawSyushi.reduce((a,b)=>a+b, 0);
     const sumFin = finals.reduce((a,b)=>a+b, 0);
     const calculatedGameFee = Math.max(0, Math.round(sumRaw - sumFin));
 
-    // 着順回数かつ合計点数を完璧に満たすスコア行を生成
+    // 合計素点と完全一致するダミースコア行を作成（1行目に全素点、残り行は0）
     let dummyScores = [];
-    const n = Math.max(1, totalHanso);
-    
-    // 1半荘あたりのベース点数
-    const avgPts = totalPts.map(p => Math.round((p / n) * 10) / 10);
-
-    for(let k=0; k<n; k++) {
-      let row = [];
-      for(let p=0; p<ruleCount; p++) {
-        row.push(avgPts[p]);
-      }
-      dummyScores.push(row);
-    }
-
-    // 端数を1行目に寄せて合計をCSVと完全一致させる
-    for(let p=0; p<ruleCount; p++) {
-      let curSum = 0;
-      for(let k=0; k<n; k++) curSum += dummyScores[k][p];
-      curSum = Math.round(curSum * 10) / 10;
-      const diff = Math.round((totalPts[p] - curSum) * 10) / 10;
-      dummyScores[0][p] = Math.round((dummyScores[0][p] + diff) * 10) / 10;
+    dummyScores.push([...totalPts]);
+    for(let k=1; k<totalHanso; k++) {
+      dummyScores.push(ruleCount === 3 ? [0, 0, 0] : [0, 0, 0, 0]);
     }
 
     const matchData = {
@@ -801,6 +802,7 @@ function executeCsvImport() {
       pCount: ruleCount,
       names,
       scores: dummyScores,
+      ranksHistory: [r1, r2, r3, r4], // 着順回数を完全保持
       totalPtsHistory: totalPts,
       chips,
       rawSyushi,
@@ -840,6 +842,7 @@ function clearAllData() {
   }
 }
 
+// 履歴一覧
 function renderHistory() {
   const list = document.getElementById('history-list');
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -851,12 +854,14 @@ function renderHistory() {
   history.sort((a, b) => b.date.localeCompare(a.date));
 
   list.innerHTML = history.map(m => {
-    let myRanks = [0, 0, 0, 0];
-    m.scores.forEach(row => {
-      let sorted = [...row].sort((a,b) => b-a);
-      let rank = sorted.indexOf(row[0]);
-      if(rank >= 0 && rank < 4) myRanks[rank]++;
-    });
+    let myRanks = m.ranksHistory ? [...m.ranksHistory] : [0,0,0,0];
+    if(!m.ranksHistory) {
+      m.scores.forEach(row => {
+        let sorted = [...row].sort((a,b) => b-a);
+        let rank = sorted.indexOf(row[0]);
+        if(rank >= 0 && rank < 4) myRanks[rank]++;
+      });
+    }
     const totalH = m.scores.length;
     const avgRank = totalH ? ((myRanks[0]*1 + myRanks[1]*2 + myRanks[2]*3 + myRanks[3]*4) / totalH).toFixed(2) : '0.00';
 
@@ -881,6 +886,7 @@ function renderHistory() {
           <div>平均 <b class="text-[#4A5D4E]">${avgRank}</b></div>
         </div>
 
+        <!-- 素収支をメインに表示 -->
         <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2.5 rounded-lg border border-[#D1D8CD] text-xs">
           ${m.names.map((n, i) => {
             const raw = (m.rawSyushi && m.rawSyushi[i] !== undefined) ? m.rawSyushi[i] : m.finals[i];
@@ -903,6 +909,7 @@ function renderHistory() {
   }).join('');
 }
 
+// 編集画面を開く
 function editMatch(id) {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const m = history.find(item => item.id === id);
@@ -910,9 +917,9 @@ function editMatch(id) {
 
   editTargetId = m.id;
   document.getElementById('cfg-date').value = m.date;
-  document.getElementById('cfg-rate').value = m.rate;
-  document.getElementById('cfg-chip').value = m.chipRate;
-  document.getElementById('cfg-gamefee').value = m.gameFee || '';
+  document.getElementById('cfg-rate').value = m.rate || 100;
+  document.getElementById('cfg-chip').value = m.chipRate || 300;
+  document.getElementById('cfg-gamefee').value = m.gameFee !== undefined && m.gameFee > 0 ? m.gameFee : '';
   document.getElementById('cfg-tobi').value = m.tobiLimit || -65;
   setPlayerCount(m.pCount);
 
@@ -925,13 +932,13 @@ function editMatch(id) {
   m.scores.forEach(row => {
     addRow();
     row.forEach((val, pIdx) => {
-      document.getElementById(`score-${rowCount}-${pIdx}`).value = val;
+      document.getElementById(`score-${rowCount}-${pIdx}`).value = val !== 0 ? val : 0;
       onScoreInput(rowCount, pIdx);
     });
   });
 
   m.chips.forEach((c, i) => {
-    document.getElementById(`chip-${i}`).value = c !== 0 ? c : '';
+    document.getElementById(`chip-${i}`).value = (c !== undefined && c !== 0) ? c : '';
   });
 
   calcTotals();
@@ -1039,13 +1046,18 @@ function renderHome() {
     rawFee += myRaw;
     totalChips += myChip;
 
-    m.scores.forEach(row => {
-      totalHanso++;
-      let sorted = [...row].sort((a,b) => b-a);
-      let rank = sorted.indexOf(row[0]);
-      if(rank >= 0 && rank < 4) posCounts[rank]++;
-      if(row[0] <= (m.tobiLimit || -65)) tobiCount++;
-    });
+    if(m.ranksHistory) {
+      totalHanso += m.scores.length;
+      for(let k=0; k<4; k++) posCounts[k] += (m.ranksHistory[k] || 0);
+    } else {
+      m.scores.forEach(row => {
+        totalHanso++;
+        let sorted = [...row].sort((a,b) => b-a);
+        let rank = sorted.indexOf(row[0]);
+        if(rank >= 0 && rank < 4) posCounts[rank]++;
+        if(row[0] <= (m.tobiLimit || -65)) tobiCount++;
+      });
+    }
   });
 
   const totalRanks = posCounts.reduce((a,b)=>a+b, 0);
