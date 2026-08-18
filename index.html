@@ -157,7 +157,7 @@
         </div>
         <div>
           <label class="block text-gray-600 mb-1">トビ基準 (以下でトビ)</label>
-          <input type="number" id="cfg-tobi" value="-50" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="number" id="cfg-tobi" value="-65" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">対局人数</label>
@@ -425,7 +425,7 @@ function onScoreInput(rId, pIdx) {
   const input = document.getElementById(`score-${rId}-${pIdx}`);
   if(!input) return;
   const val = parseFloat(input.value);
-  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -50;
+  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
   const badge = document.getElementById(`tobi-badge-${rId}-${pIdx}`);
   
   if(!isNaN(val)) {
@@ -440,7 +440,7 @@ function onScoreInput(rId, pIdx) {
 }
 
 function recheckTobiAll() {
-  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -50;
+  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
   const rows = document.getElementById('score-rows').querySelectorAll('tr');
   rows.forEach(tr => {
     const rId = tr.dataset.rId;
@@ -622,7 +622,7 @@ function saveMatch() {
     rate: parseFloat(document.getElementById('cfg-rate').value) || 100,
     chipRate: parseFloat(document.getElementById('cfg-chip').value) || 300,
     gameFee: parseInt(document.getElementById('cfg-gamefee').value) || 0,
-    tobiLimit: parseFloat(document.getElementById('cfg-tobi').value) || -50
+    tobiLimit: parseFloat(document.getElementById('cfg-tobi').value) || -65
   };
 
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -649,7 +649,7 @@ function initNewMatchSheet() {
   setTodayDate();
   for(let i=0; i<4; i++) addRow();
   for(let i=1; i<4; i++) document.getElementById(`pname-${i}`).value = ''; // 相手枠は空白
-  for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';
+  for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';  // チップは空白
   document.getElementById('cfg-gamefee').value = ''; // ゲーム代は空白
   calcTotals();
 }
@@ -724,7 +724,7 @@ function editMatch(id) {
   document.getElementById('cfg-rate').value = m.rate;
   document.getElementById('cfg-chip').value = m.chipRate;
   document.getElementById('cfg-gamefee').value = m.gameFee || '';
-  document.getElementById('cfg-tobi').value = m.tobiLimit || -50;
+  document.getElementById('cfg-tobi').value = m.tobiLimit || -65;
   setPlayerCount(m.pCount);
 
   m.names.forEach((name, i) => {
@@ -742,7 +742,7 @@ function editMatch(id) {
   });
 
   m.chips.forEach((c, i) => {
-    document.getElementById(`chip-${i}`).value = c;
+    document.getElementById(`chip-${i}`).value = c !== 0 ? c : '';
   });
 
   calcTotals();
@@ -859,7 +859,7 @@ function renderHome() {
       let sorted = [...row].sort((a,b) => b-a);
       let rank = sorted.indexOf(row[0]);
       if(rank >= 0 && rank < 4) posCounts[rank]++;
-      if(row[0] <= (m.tobiLimit || -50)) tobiCount++;
+      if(row[0] <= (m.tobiLimit || -65)) tobiCount++;
     });
   });
 
@@ -899,7 +899,6 @@ function renderHome() {
   let graphData = [];
 
   if(currentPeriod === 'all') {
-    // 生涯：年ごとの推移
     let yearMap = {};
     filtered.forEach(m => {
       const y = m.date.slice(0, 4) + '年';
@@ -912,7 +911,6 @@ function renderHome() {
       graphData.push(cSum);
     });
   } else if(currentPeriod === 'year') {
-    // 年別：1月〜12月の月別推移
     let monthMap = {};
     for(let m=1; m<=12; m++) monthMap[`${m}月`] = 0;
     filtered.forEach(m => {
@@ -927,7 +925,6 @@ function renderHome() {
       graphData.push(cSum);
     }
   } else if(currentPeriod === 'month') {
-    // 月別：日ごとの推移
     let dayMap = {};
     filtered.forEach(m => {
       const d = parseInt(m.date.slice(8, 10)) + '日';
@@ -965,7 +962,6 @@ function renderHome() {
   });
 }
 
-// 相手別成績（直接対決差分＆添付画像スタイル）
 function openRivalModal() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -976,7 +972,6 @@ function openRivalModal() {
     const myFin = m.finals[0] || 0;
     const myChip = (m.chips && m.chips[0] !== undefined) ? m.chips[0] : 0;
     
-    // 自分の素点合計
     let myTotalScore = 0;
     m.scores.forEach(r => { myTotalScore += (r[0] || 0); });
 
@@ -987,15 +982,12 @@ function openRivalModal() {
         }
         rivals[name].count += m.scores.length;
         
-        // 相手との収支差（自分 - 相手）
         const oppFin = m.finals[i] || 0;
         rivals[name].syushiDiff += (myFin - oppFin);
 
-        // 相手とのチップ差（自分 - 相手）
         const oppChip = (m.chips && m.chips[i] !== undefined) ? m.chips[i] : 0;
         rivals[name].chipDiff += (myChip - oppChip);
 
-        // 相手とのスコア差（自分 - 相手）
         let oppTotalScore = 0;
         m.scores.forEach(r => { oppTotalScore += (r[i] || 0); });
         rivals[name].scoreDiff += (myTotalScore - oppTotalScore);
@@ -1012,7 +1004,6 @@ function openRivalModal() {
       const sDiff = Math.round(r.scoreDiff * 10) / 10;
       return `
         <div class="card p-3 shadow-sm bg-[#F7F9F6] border border-[#D1D8CD] space-y-2">
-          <!-- 相手名 & 収支差 -->
           <div class="flex justify-between items-center border-b border-gray-200/80 pb-2">
             <div class="flex items-center gap-1.5">
               <span class="text-base">👤</span>
@@ -1026,7 +1017,6 @@ function openRivalModal() {
             </div>
           </div>
           
-          <!-- 3段パネル (スコア差 / チップ差 / 対局数) -->
           <div class="grid grid-cols-3 gap-1.5 text-center text-xs">
             <div class="bg-white p-1.5 rounded-lg border border-[#D1D8CD]">
               <div class="text-[9px] text-gray-500">スコア差</div>
