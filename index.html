@@ -51,7 +51,7 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
-<!-- ヘッダー（ポップな「ちょん簿」ロゴ配置） -->
+<!-- ヘッダー -->
 <header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
     <div class="bg-[#4A5D4E] text-white text-xs px-2 py-0.5 rounded-lg font-black app-logo-font shadow-sm">牌</div>
@@ -91,12 +91,14 @@
       </div>
     </div>
 
+    <!-- 個人戦績カード（トビ率削除版） -->
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-3">
         <h2 class="font-bold text-sm text-[#4A5D4E]"><span id="stats-rule-label">3人麻雀</span>・<span id="period-title-label">生涯</span>戦績 (<span id="stats-user">自分</span>)</h2>
         <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline font-medium">名前変更</button>
       </div>
       
+      <!-- 着順グリッド -->
       <div id="rank-grid" class="grid grid-cols-3 gap-1 text-center mb-3">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">1着</div>
@@ -120,12 +122,24 @@
         </div>
       </div>
 
+      <!-- 統計指標グリッド -->
+      <div class="grid grid-cols-3 gap-1.5 text-xs mb-2">
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5">対局数</div>
+          <div id="st-totalhanso" class="font-bold text-sm">0 半荘</div>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5">トップ率</div>
+          <div id="st-toprate" class="font-bold text-sm">0%</div>
+        </div>
+        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
+          <div class="text-[10px] text-gray-500 mb-0.5">平均着順</div>
+          <div id="st-avgpos" class="font-bold text-sm">0.00</div>
+        </div>
+      </div>
+
+      <!-- 収支・チップグリッド -->
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">対局数:</span><span id="st-totalhanso" class="font-bold">0 半荘</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
-        
         <div class="bg-white p-2.5 rounded-lg border border-[#D1D8CD] flex justify-between items-center col-span-2">
           <div>
             <span class="text-gray-700 font-bold">総収支 (場代なし):</span>
@@ -280,7 +294,7 @@
 
 </main>
 
-<!-- 設定モーダル（バックアップ・復元・CSVインポート） -->
+<!-- 設定モーダル -->
 <div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-4 shadow-xl max-h-[90vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -289,7 +303,6 @@
     </div>
 
     <div class="space-y-4 overflow-y-auto flex-1 text-xs">
-      <!-- 自分の名前 -->
       <div class="space-y-1">
         <label class="font-bold text-gray-700">自分の名前（固定）</label>
         <div class="flex gap-2">
@@ -298,7 +311,6 @@
         </div>
       </div>
 
-      <!-- データバックアップ＆復元 -->
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
           <span>💾 バックアップ＆端末間同期</span>
@@ -317,7 +329,6 @@
         </div>
       </div>
 
-      <!-- CSVデータ一括インポート -->
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
           <span>📥 雀簿CSVテキストから取り込み</span>
@@ -328,7 +339,6 @@
         </button>
       </div>
 
-      <!-- データ全消去 -->
       <div class="border-t pt-3 space-y-1">
         <label class="font-bold text-red-600">⚠️ データ初期化</label>
         <button onclick="clearAllData()" class="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded font-bold text-xs hover:bg-red-100">
@@ -396,7 +406,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHome();
 });
 
-// 強制キャッシュ破棄・アプリ最新化処理
 function forceReloadApp() {
   const cleanUrl = window.location.href.split('?')[0];
   window.location.replace(cleanUrl + '?v=' + Date.now());
@@ -1120,7 +1129,6 @@ function renderHome() {
   let totalFee = 0;
   let rawFee = 0;
   let totalChips = 0;
-  let tobiCount = 0;
   let totalHanso = 0;
 
   filtered.forEach(m => {
@@ -1141,7 +1149,6 @@ function renderHome() {
         let sorted = [...row].sort((a,b) => b-a);
         let rank = sorted.indexOf(row[0]);
         if(rank >= 0 && rank < 4) posCounts[rank]++;
-        if(row[0] <= (m.tobiLimit || -65)) tobiCount++;
       });
     }
   });
@@ -1174,8 +1181,6 @@ function renderHome() {
   const chipEl = document.getElementById('st-totalchip');
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
   chipEl.className = `font-bold ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
-
-  document.getElementById('st-tobirate').innerText = totalHanso ? `${Math.round(tobiCount/totalHanso*100)}%` : '0%';
 
   let graphLabels = [];
   let graphData = [];
