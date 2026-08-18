@@ -368,13 +368,13 @@
           </button>
         </div>
 
-        <!-- CSV形式ガイド（アコーディオン） -->
+        <!-- CSV形式ガイド（アコーディオン：実名を排除したダミー名表記） -->
         <div id="csv-format-guide" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-[10px] space-y-2 text-gray-600 font-mono">
           <div class="font-bold text-gray-800 border-b pb-1">【CSV列順序（全27列）】</div>
           <div class="leading-relaxed">
             1: 日付 (YYYY-MM-DD)<br>
             2: 麻雀種別 (3 or 4)<br>
-            3〜6: P1〜P4 名前 (3麻時はP4空欄)<br>
+            3〜6: P1〜P4 名前 (通常3麻時はP4空欄)<br>
             7: 総半荘数<br>
             8〜11: P1の1着〜4着回数<br>
             12〜15: P1〜P4 素点計<br>
@@ -384,7 +384,7 @@
           </div>
           <div class="bg-white p-1.5 rounded border border-gray-200 text-[9px] break-all leading-tight text-gray-500">
             <strong>例（4人回し3麻）:</strong><br>
-            2026-08-16,3,mor,ありけ,の,さとう,7,2,3,2,0,-225.0,404.0,-326.0,147.0,-15,4,-1,12,-27000,41600,-32900,18300,-29680,38920,-35570,15630
+            2026-08-16,3,Aさん,Bさん,Cさん,Dさん,7,2,3,2,0,-225.0,404.0,-326.0,147.0,-15,4,-1,12,-27000,41600,-32900,18300,-29680,38920,-35570,15630
           </div>
         </div>
       </div>
@@ -1286,7 +1286,6 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
-// 確率を小数点第1位まで表示する集計
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1340,7 +1339,6 @@ function renderHome() {
   document.getElementById('st-3rd').innerText = `${posCounts[2]}回`;
   document.getElementById('st-4th').innerText = `${posCounts[3]}回`;
   
-  // 小数点第1位まで表示 (例: 35.2%)
   document.getElementById('st-1st-rate').innerText = totalRanks ? `${(posCounts[0] / totalRanks * 100).toFixed(1)}%` : '0.0%';
   document.getElementById('st-2nd-rate').innerText = totalRanks ? `${(posCounts[1] / totalRanks * 100).toFixed(1)}%` : '0.0%';
   document.getElementById('st-3rd-rate').innerText = totalRanks ? `${(posCounts[2] / totalRanks * 100).toFixed(1)}%` : '0.0%';
@@ -1364,7 +1362,6 @@ function renderHome() {
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
   chipEl.className = `font-bold ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
 
-  // 複合グラフ描画
   let graphLabels = [];
   let periodBarData = [];
   let cumulativeLineData = [];
