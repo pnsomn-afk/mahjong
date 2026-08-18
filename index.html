@@ -43,7 +43,7 @@
 <!-- メイン表示領域 -->
 <main id="main-content" class="flex-1 overflow-y-auto p-3 pb-24">
   
-  <!-- 【1. ホーム画面】 -->
+  <!-- 【1. ホーム（戦績・期間別・グラフ）画面】 -->
   <div id="view-home" class="space-y-3">
     
     <!-- 麻雀種別タブ -->
@@ -97,19 +97,25 @@
         </div>
       </div>
 
-      <!-- 統計指標グリッド -->
+      <!-- 統計指標グリッド（メインを素収支に配置） -->
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">対局数:</span><span id="st-totalhanso" class="font-bold">0 半荘</span></div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">トップ率:</span><span id="st-toprate" class="font-bold">0%</span></div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">平均着順:</span><span id="st-avgpos" class="font-bold">0.00</span></div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between"><span class="text-gray-500">飛び率:</span><span id="st-tobirate" class="font-bold">0%</span></div>
-        <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between col-span-2">
-          <span class="text-gray-500">総収支(場代込):</span>
-          <span id="st-totalfee" class="font-bold text-sm">0</span>
+        
+        <!-- メイン：素収支 -->
+        <div class="bg-white p-2.5 rounded-lg border border-[#D1D8CD] flex justify-between items-center col-span-2">
+          <div>
+            <span class="text-gray-700 font-bold">総収支 (場代なし):</span>
+            <span class="text-[10px] text-gray-400 block">※素点＋チップ</span>
+          </div>
+          <span id="st-rawfee" class="font-bold text-base">0</span>
         </div>
+
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between">
-          <span class="text-gray-500">素収支(場代無):</span>
-          <span id="st-rawfee" class="font-bold">0</span>
+          <span class="text-gray-500">場代込収支:</span>
+          <span id="st-totalfee" class="font-bold">0</span>
         </div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] flex justify-between">
           <span class="text-gray-500">総チップ:</span>
@@ -118,15 +124,18 @@
       </div>
     </div>
 
-    <!-- 収支推移グラフ -->
+    <!-- 収支推移グラフ（場代なし基準） -->
     <div class="card p-4 shadow-sm">
-      <h3 class="font-bold text-xs text-[#4A5D4E] mb-2"><span id="graph-title-label">生涯</span> 収支推移グラフ</h3>
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-bold text-xs text-[#4A5D4E]"><span id="graph-title-label">生涯</span> 収支推移グラフ</h3>
+        <span class="text-[10px] text-gray-500">(場代なし)</span>
+      </div>
       <div class="h-48">
         <canvas id="chart-syushi"></canvas>
       </div>
     </div>
 
-    <!-- 相手別成績へのリンクボタン -->
+    <!-- 相手別成績ボタン -->
     <button onclick="openRivalModal()" class="w-full py-3 card shadow-sm font-bold text-xs text-[#4A5D4E] flex items-center justify-center gap-2 active:bg-gray-100">
       <span>👥</span><span>対戦相手別の通算成績を確認する</span><span>➔</span>
     </button>
@@ -134,6 +143,7 @@
 
   <!-- 【2. 入力画面】 -->
   <div id="view-input" class="space-y-3 hidden">
+    <!-- 対局情報・ルール設定 -->
     <div class="card p-3 shadow-sm">
       <div class="flex justify-between items-center cursor-pointer" onclick="toggleConfig()">
         <span class="font-bold text-sm text-[#4A5D4E]">対局情報・ルール設定</span>
@@ -217,28 +227,30 @@
             <td class="p-1"><input type="number" id="chip-2" onfocus="autoCompleteChip(2)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
             <td id="td-chip-3" class="p-1 hidden"><input type="number" id="chip-3" onfocus="autoCompleteChip(3)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
           </tr>
-          <tr>
-            <td class="py-2 text-gray-500">収支</td>
-            <td id="syushi-0" class="py-2">0</td>
-            <td id="syushi-1" class="py-2">0</td>
-            <td id="syushi-2" class="py-2">0</td>
-            <td id="syushi-3" class="py-2 hidden">0</td>
-          </tr>
           <tr class="bg-[#EAEFE8] border-t border-[#D1D8CD]">
-            <td class="py-2.5 text-[#4A5D4E] leading-tight">最終<br><span class="text-[9px] font-normal text-gray-500">(場代込)</span></td>
-            <td id="final-0" class="py-2.5 text-sm font-bold">0</td>
-            <td id="final-1" class="py-2.5 text-sm font-bold">0</td>
-            <td id="final-2" class="py-2.5 text-sm font-bold">0</td>
-            <td id="final-3" class="py-2.5 text-sm font-bold hidden">0</td>
+            <td class="py-2.5 text-[#4A5D4E] leading-tight">収支<br><span class="text-[9px] font-normal text-gray-500">(場代無)</span></td>
+            <td id="syushi-0" class="py-2.5 text-sm font-bold">0</td>
+            <td id="syushi-1" class="py-2.5 text-sm font-bold">0</td>
+            <td id="syushi-2" class="py-2.5 text-sm font-bold">0</td>
+            <td id="syushi-3" class="py-2.5 text-sm font-bold hidden">0</td>
+          </tr>
+          <tr>
+            <td class="py-2 text-gray-500">最終(場代込)</td>
+            <td id="final-0" class="py-2">0</td>
+            <td id="final-1" class="py-2">0</td>
+            <td id="final-2" class="py-2">0</td>
+            <td id="final-3" class="py-2 hidden">0</td>
           </tr>
         </tfoot>
       </table>
 
+      <!-- 行追加ボタン -->
       <button onclick="addRow()" class="w-full mt-3 py-2.5 border border-dashed border-[#8C9A8E] text-[#4A5D4E] rounded-lg text-xs font-bold bg-white active:bg-gray-100 flex items-center justify-center gap-1">
         <span>＋</span><span>半荘を追加</span>
       </button>
     </div>
 
+    <!-- 登録ボタン -->
     <div class="pt-2">
       <button onclick="saveMatch()" id="btn-save-match" class="w-full py-3.5 rounded-xl btn-main text-base font-bold shadow-md active:opacity-90 flex items-center justify-center gap-2">
         <span>対局結果を登録する</span>
@@ -277,12 +289,8 @@
           <span>📥 過去データ一括インポート (雀簿CSV形式)</span>
         </label>
         <p class="text-[11px] text-gray-500 leading-relaxed">
-          AIが生成したCSVテキストを貼り付けて「登録する」を押してください。素収支・チップ・全員の差分がすべて復元されます。
+          AIが生成したCSVテキストを貼り付けて「登録する」を押してください。素収支・場代・チップ・全員の差分がすべて復元されます。
         </p>
-
-        <div class="bg-gray-100 p-2 rounded text-[10px] text-gray-600 font-mono leading-tight">
-          日付, 人数, P1名〜P4名, 対局数, 1着〜4着回数, P1〜P4素点計, P1〜P4チップ, P1〜P4素収支, P1〜P4最終収支
-        </div>
 
         <textarea id="import-csv-textarea" rows="4" placeholder="CSVテキストをここに貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
         <button onclick="executeCsvImport()" class="w-full py-2.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
@@ -577,7 +585,7 @@ function calcTotals() {
     syushi[p] = Math.round((totalPts[p] * rate) + (chipVal * chipRate));
     const syuEl = document.getElementById(`syushi-${p}`);
     syuEl.innerText = (syushi[p] > 0 ? '+' : '') + syushi[p].toLocaleString();
-    syuEl.className = `py-2 font-bold ${syushi[p] > 0 ? 'score-pos' : syushi[p] < 0 ? 'score-neg' : ''}`;
+    syuEl.className = `py-2.5 text-sm font-bold ${syushi[p] > 0 ? 'score-pos' : syushi[p] < 0 ? 'score-neg' : ''}`;
   }
 
   let finalSyushi = [...syushi];
@@ -601,7 +609,7 @@ function calcTotals() {
   for(let p=0; p<pCount; p++) {
     const finEl = document.getElementById(`final-${p}`);
     finEl.innerText = (finalSyushi[p] > 0 ? '+' : '') + finalSyushi[p].toLocaleString();
-    finEl.className = `py-2.5 text-sm font-bold ${finalSyushi[p] > 0 ? 'score-pos' : finalSyushi[p] < 0 ? 'score-neg' : ''}`;
+    finEl.className = `py-2 text-xs font-bold ${finalSyushi[p] > 0 ? 'score-pos' : finalSyushi[p] < 0 ? 'score-neg' : ''}`;
   }
 }
 
@@ -722,7 +730,7 @@ function initNewMatchSheet() {
   calcTotals();
 }
 
-// 改修版CSV一括インポート（全素点・全チップ・全素収支・全最終収支の完全復元）
+// 改修版CSV一括インポート（場代の自動逆算＆完全復元）
 function executeCsvImport() {
   const text = document.getElementById('import-csv-textarea').value.trim();
   if(!text) {
@@ -743,49 +751,48 @@ function executeCsvImport() {
     const date = parts[0];
     const ruleCount = parseInt(parts[1]) || 3;
     
-    // 名前 (P1〜P4)
     const p1 = parts[2] || '自分';
     const p2 = parts[3] || '相手1';
     const p3 = parts[4] || '相手2';
     const p4 = parts[5] || '相手3';
     const names = ruleCount === 3 ? [p1, p2, p3] : [p1, p2, p3, p4];
 
-    // 対局数 & 自分の着順回数
     const totalHanso = parseInt(parts[6]) || 1;
     const r1 = parseInt(parts[7]) || 0;
     const r2 = parseInt(parts[8]) || 0;
     const r3 = parseInt(parts[9]) || 0;
     const r4 = parseInt(parts[10]) || 0;
 
-    // 各人の素点計 (P1〜P4)
     const pt1 = parseFloat(parts[11]) || 0;
     const pt2 = parseFloat(parts[12]) || 0;
     const pt3 = parseFloat(parts[13]) || 0;
     const pt4 = parseFloat(parts[14]) || 0;
     const totalPts = ruleCount === 3 ? [pt1, pt2, pt3] : [pt1, pt2, pt3, pt4];
 
-    // 各人のチップ枚数 (P1〜P4)
     const c1 = parseInt(parts[15]) || 0;
     const c2 = parseInt(parts[16]) || 0;
     const c3 = parseInt(parts[17]) || 0;
     const c4 = parseInt(parts[18]) || 0;
     const chips = ruleCount === 3 ? [c1, c2, c3] : [c1, c2, c3, c4];
 
-    // 各人の素収支 (P1〜P4)
     const raw1 = parseFloat(parts[19]) || 0;
     const raw2 = parseFloat(parts[20]) || 0;
     const raw3 = parseFloat(parts[21]) || 0;
     const raw4 = parseFloat(parts[22]) || 0;
     const rawSyushi = ruleCount === 3 ? [raw1, raw2, raw3] : [raw1, raw2, raw3, raw4];
 
-    // 各人の最終収支 (P1〜P4)
     const fin1 = parseFloat(parts[23]) || 0;
     const fin2 = parseFloat(parts[24]) || 0;
     const fin3 = parseFloat(parts[25]) || 0;
     const fin4 = parseFloat(parts[26]) || 0;
     const finals = ruleCount === 3 ? [fin1, fin2, fin3] : [fin1, fin2, fin3, fin4];
 
-    // 着順回数に合わせたダミースコア行生成（平均着順・着順率用）
+    // 場代の自動逆算：(素収支合計 - 最終収支合計)
+    const sumRaw = rawSyushi.reduce((a,b)=>a+b, 0);
+    const sumFin = finals.reduce((a,b)=>a+b, 0);
+    const calculatedGameFee = Math.max(0, Math.round(sumRaw - sumFin));
+
+    // 着順回数に合わせたダミースコア行生成
     let dummyScores = [];
     for(let k=0; k<r1; k++) dummyScores.push(ruleCount === 3 ? [30, -10, -20] : [30, 10, -10, -30]);
     for(let k=0; k<r2; k++) dummyScores.push(ruleCount === 3 ? [0, 20, -20] : [10, 30, -10, -30]);
@@ -802,13 +809,13 @@ function executeCsvImport() {
       pCount: ruleCount,
       names,
       scores: dummyScores,
-      totalPtsHistory: totalPts, // 素点計を保存
+      totalPtsHistory: totalPts,
       chips,
       rawSyushi,
       finals,
       rate: 100,
       chipRate: 300,
-      gameFee: 0,
+      gameFee: calculatedGameFee,
       tobiLimit: -65
     };
 
@@ -818,7 +825,7 @@ function executeCsvImport() {
 
   if(successCount > 0) {
     localStorage.setItem('mahjong_history', JSON.stringify(history));
-    alert(`${successCount} 件の対局履歴を完全復元インポートしました！`);
+    alert(`${successCount} 件の対局履歴をインポートしました！`);
     document.getElementById('import-csv-textarea').value = '';
     closeSettingsModal();
     initPeriodSelectors();
@@ -841,6 +848,7 @@ function clearAllData() {
   }
 }
 
+// 履歴一覧（素収支をメインに表示）
 function renderHistory() {
   const list = document.getElementById('history-list');
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -882,15 +890,23 @@ function renderHistory() {
           <div>平均 <b class="text-[#4A5D4E]">${avgRank}</b></div>
         </div>
 
-        <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2 rounded-lg border border-[#D1D8CD] text-xs">
-          ${m.names.map((n, i) => `
-            <div>
-              <div class="text-gray-500 text-[10px] truncate font-medium">${n}</div>
-              <div class="font-bold ${m.finals[i] > 0 ? 'score-pos' : m.finals[i] < 0 ? 'score-neg' : ''}">
-                ${(m.finals[i] > 0 ? '+' : '') + m.finals[i].toLocaleString()}
+        <!-- 全員の素収支（場代なし）をメイン表示 -->
+        <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2.5 rounded-lg border border-[#D1D8CD] text-xs">
+          ${m.names.map((n, i) => {
+            const raw = (m.rawSyushi && m.rawSyushi[i] !== undefined) ? m.rawSyushi[i] : m.finals[i];
+            const fin = m.finals[i] || 0;
+            return `
+              <div>
+                <div class="text-gray-500 text-[10px] truncate font-medium">${n}</div>
+                <div class="font-bold text-sm ${raw > 0 ? 'score-pos' : raw < 0 ? 'score-neg' : ''}">
+                  ${(raw > 0 ? '+' : '') + raw.toLocaleString()}
+                </div>
+                <div class="text-[9px] text-gray-400">
+                  (込 ${(fin > 0 ? '+' : '') + fin.toLocaleString()})
+                </div>
               </div>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -1000,6 +1016,7 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
+// ホーム戦績・グラフ更新（素収支メイン）
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1059,13 +1076,15 @@ function renderHome() {
   const avg = totalRanks ? ((posCounts[0]*1 + posCounts[1]*2 + posCounts[2]*3 + posCounts[3]*4) / totalRanks).toFixed(2) : '0.00';
   document.getElementById('st-avgpos').innerText = avg;
   
-  const feeEl = document.getElementById('st-totalfee');
-  feeEl.innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
-  feeEl.className = `font-bold text-sm ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
-
+  // 素収支（メイン表示）
   const rawEl = document.getElementById('st-rawfee');
   rawEl.innerText = (rawFee > 0 ? '+' : '') + rawFee.toLocaleString();
-  rawEl.className = `font-bold ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
+  rawEl.className = `font-bold text-base ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
+
+  // 場代込
+  const feeEl = document.getElementById('st-totalfee');
+  feeEl.innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
+  feeEl.className = `font-bold ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
 
   const chipEl = document.getElementById('st-totalchip');
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
@@ -1073,6 +1092,7 @@ function renderHome() {
 
   document.getElementById('st-tobirate').innerText = totalHanso ? `${Math.round(tobiCount/totalHanso*100)}%` : '0%';
 
+  // グラフデータ生成（素収支ベース）
   let graphLabels = [];
   let graphData = [];
 
@@ -1080,7 +1100,8 @@ function renderHome() {
     let yearMap = {};
     filtered.forEach(m => {
       const y = m.date.slice(0, 4) + '年';
-      yearMap[y] = (yearMap[y] || 0) + (m.finals[0] || 0);
+      const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : (m.finals[0] || 0);
+      yearMap[y] = (yearMap[y] || 0) + myRaw;
     });
     let cSum = 0;
     Object.keys(yearMap).sort().forEach(y => {
@@ -1093,7 +1114,8 @@ function renderHome() {
     for(let m=1; m<=12; m++) monthMap[`${m}月`] = 0;
     filtered.forEach(m => {
       const mon = parseInt(m.date.slice(5, 7)) + '月';
-      if(monthMap[mon] !== undefined) monthMap[mon] += (m.finals[0] || 0);
+      const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : (m.finals[0] || 0);
+      if(monthMap[mon] !== undefined) monthMap[mon] += myRaw;
     });
     let cSum = 0;
     for(let m=1; m<=12; m++) {
@@ -1106,7 +1128,8 @@ function renderHome() {
     let dayMap = {};
     filtered.forEach(m => {
       const d = parseInt(m.date.slice(8, 10)) + '日';
-      dayMap[d] = (dayMap[d] || 0) + (m.finals[0] || 0);
+      const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : (m.finals[0] || 0);
+      dayMap[d] = (dayMap[d] || 0) + myRaw;
     });
     let cSum = 0;
     Object.keys(dayMap).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(d => {
@@ -1123,7 +1146,7 @@ function renderHome() {
     data: {
       labels: graphLabels.length ? graphLabels : ['データなし'],
       datasets: [{
-        label: '累計収支',
+        label: '累計素収支',
         data: graphData.length ? graphData : [0],
         borderColor: '#4A5D4E',
         backgroundColor: 'rgba(74, 93, 78, 0.1)',
@@ -1140,7 +1163,7 @@ function renderHome() {
   });
 }
 
-// 相手別成績（素点差・チップ差・最終収支差を完全集計）
+// 相手別成績（素収支差・スコア差・チップ差）
 function openRivalModal() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1148,10 +1171,9 @@ function openRivalModal() {
   let rivals = {};
 
   history.forEach(m => {
-    const myFin = m.finals[0] || 0;
+    const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : (m.finals[0] || 0);
     const myChip = (m.chips && m.chips[0] !== undefined) ? m.chips[0] : 0;
     
-    // 素点計（インポートデータがある場合はtotalPtsHistoryを使用）
     let myScore = 0;
     if(m.totalPtsHistory && m.totalPtsHistory[0] !== undefined) {
       myScore = m.totalPtsHistory[0];
@@ -1166,9 +1188,9 @@ function openRivalModal() {
         }
         rivals[name].count += m.scores.length;
         
-        // 相手との収支差
-        const oppFin = m.finals[i] || 0;
-        rivals[name].syushiDiff += (myFin - oppFin);
+        // 相手との素収支差
+        const oppRaw = (m.rawSyushi && m.rawSyushi[i] !== undefined) ? m.rawSyushi[i] : (m.finals[i] || 0);
+        rivals[name].syushiDiff += (myRaw - oppRaw);
 
         // 相手とのチップ差
         const oppChip = (m.chips && m.chips[i] !== undefined) ? m.chips[i] : 0;
@@ -1201,7 +1223,7 @@ function openRivalModal() {
               <span class="font-bold text-sm text-gray-800">${name}</span>
             </div>
             <div class="text-right">
-              <div class="text-[9px] text-gray-500">収支差 (自分基準)</div>
+              <div class="text-[9px] text-gray-500">収支差 (素収支ベース)</div>
               <div class="text-base font-bold ${r.syushiDiff > 0 ? 'score-pos' : r.syushiDiff < 0 ? 'score-neg' : ''}">
                 ${(r.syushiDiff > 0 ? '+' : '') + r.syushiDiff.toLocaleString()} P
               </div>
