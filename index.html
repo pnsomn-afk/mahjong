@@ -2,12 +2,28 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- キャッシュを無効化し、常に最新版を強制読み込み -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>麻雀スコア記録</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  body { background-color: #E2E6DE; color: #2D3748; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { 
+    background-color: #E2E6DE; 
+    color: #2D3748; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* iPhoneのセーフエリア対応 */
+  header {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  nav {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
   .card { background-color: #F7F9F6; border: 1px solid #D1D8CD; border-radius: 12px; }
   .btn-main { background-color: #4A5D4E; color: white; border-radius: 8px; }
   .tab-active { color: #4A5D4E; font-weight: bold; }
@@ -29,15 +45,15 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
-<!-- ヘッダー -->
-<header class="bg-[#E2E6DE] px-4 py-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
+<!-- ヘッダー（上部セーフエリア余白付き） -->
+<header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
     <div class="bg-[#4A5D4E] text-white text-xs px-2 py-1 rounded font-bold">牌</div>
     <h1 id="header-title" class="font-bold text-lg text-[#2D3748]">ホーム</h1>
   </div>
-  <div class="flex items-center space-x-3">
-    <button onclick="openSettingsModal()" class="text-sm text-[#4A5D4E] hover:text-gray-800 p-1 font-bold">⚙️ 設定</button>
-  </div>
+  <button onclick="openSettingsModal()" class="flex items-center gap-1 bg-white/70 border border-[#D1D8CD] text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-sm active:bg-gray-200">
+    <span>⚙️</span><span>設定</span>
+  </button>
 </header>
 
 <!-- メイン表示領域 -->
@@ -174,7 +190,6 @@
       </div>
     </div>
 
-    <!-- スコアシート -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
         <thead>
@@ -256,15 +271,16 @@
 
 </main>
 
-<!-- 設定モーダル -->
+<!-- 設定モーダル（バックアップ・復元・CSVインポート） -->
 <div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-4 shadow-xl max-h-[90vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
-      <h3 class="font-bold text-sm text-gray-800">⚙️ アプリ設定</h3>
+      <h3 class="font-bold text-sm text-gray-800">⚙️ アプリ設定・データ管理</h3>
       <button onclick="closeSettingsModal()" class="text-gray-400 text-sm font-bold px-2">✕</button>
     </div>
 
     <div class="space-y-4 overflow-y-auto flex-1 text-xs">
+      <!-- 自分の名前 -->
       <div class="space-y-1">
         <label class="font-bold text-gray-700">自分の名前（固定）</label>
         <div class="flex gap-2">
@@ -273,16 +289,37 @@
         </div>
       </div>
 
+      <!-- データバックアップ＆復元 -->
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
-          <span>📥 過去データ一括インポート (雀簿CSV)</span>
+          <span>💾 バックアップ＆端末間同期</span>
         </label>
-        <textarea id="import-csv-textarea" rows="4" placeholder="生成されたCSVテキストを貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
-        <button onclick="executeCsvImport()" class="w-full py-2.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
-          データを一括読み込み・登録する
+        <p class="text-[11px] text-gray-500 leading-relaxed">
+          データをファイルとして保存したり、別のブラウザやホーム画面アプリへデータを引き継ぐことができます。
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="exportBackupData()" class="py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-bold text-xs flex items-center justify-center gap-1">
+            <span>📥</span><span>バックアップ保存</span>
+          </button>
+          <label class="py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold text-xs flex items-center justify-center gap-1 cursor-pointer text-center">
+            <span>📂</span><span>ファイルから復元</span>
+            <input type="file" id="backup-file-input" onchange="importBackupData(event)" class="hidden" accept=".json">
+          </label>
+        </div>
+      </div>
+
+      <!-- CSVデータ一括インポート -->
+      <div class="space-y-2 border-t pt-3">
+        <label class="font-bold text-gray-700 flex items-center gap-1">
+          <span>📥 雀簿CSVテキストから取り込み</span>
+        </label>
+        <textarea id="import-csv-textarea" rows="3" placeholder="雀簿から生成したCSVテキストを貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
+        <button onclick="executeCsvImport()" class="w-full py-2 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
+          CSVデータを登録する
         </button>
       </div>
 
+      <!-- データ全消去 -->
       <div class="border-t pt-3 space-y-1">
         <label class="font-bold text-red-600">⚠️ データ初期化</label>
         <button onclick="clearAllData()" class="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded font-bold text-xs hover:bg-red-100">
@@ -317,7 +354,7 @@
 </div>
 
 <!-- 下部ナビ -->
-<nav class="bg-[#F7F9F6] border-t border-[#D1D8CD] fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around z-30">
+<nav class="bg-[#F7F9F6] border-t border-[#D1D8CD] fixed bottom-0 left-0 right-0 flex items-center justify-around z-30 pt-2">
   <button onclick="showTab('home')" id="tab-home" class="tab-active flex flex-col items-center flex-1">
     <span class="text-xl">🏠</span><span class="text-[10px] mt-0.5">ホーム</span>
   </button>
@@ -408,6 +445,53 @@ function applyNewMyName(name) {
 
   renderHome();
   renderHistory();
+}
+
+function exportBackupData() {
+  const history = localStorage.getItem('mahjong_history') || '[]';
+  const myName = localStorage.getItem('mahjong_my_name') || '自分';
+  const backupData = {
+    myName,
+    history: JSON.parse(history),
+    exportedAt: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mahjong_backup_${getTodayString()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importBackupData(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if(data.history && Array.isArray(data.history)) {
+        localStorage.setItem('mahjong_history', JSON.stringify(data.history));
+        if(data.myName) {
+          localStorage.setItem('mahjong_my_name', data.myName);
+          document.getElementById('pname-0').value = data.myName;
+        }
+        alert(`${data.history.length} 件のデータを完全復元しました！`);
+        closeSettingsModal();
+        initPeriodSelectors();
+        renderHistory();
+        renderHome();
+      } else {
+        alert('無効なバックアップファイルです。');
+      }
+    } catch(err) {
+      alert('ファイルの読み込みに失敗しました。');
+    }
+  };
+  reader.readAsText(file);
 }
 
 function setPlayerCount(num) {
@@ -669,7 +753,6 @@ function saveMatch() {
     return parseFloat(txt) || 0;
   });
 
-  // 素点計
   let totalPts = [0,0,0,0].slice(0, pCount);
   scores.forEach(r => {
     for(let p=0; p<pCount; p++) totalPts[p] += r[p];
@@ -721,7 +804,6 @@ function initNewMatchSheet() {
   calcTotals();
 }
 
-// 27列CSVの完全インポート処理
 function executeCsvImport() {
   const text = document.getElementById('import-csv-textarea').value.trim();
   if(!text) {
@@ -737,59 +819,51 @@ function executeCsvImport() {
     const trimmed = line.trim();
     if(!trimmed) return;
     const p = trimmed.split(',').map(s => s.trim());
-    if(p.length < 24) return; // 24列以上
+    if(p.length < 24) return;
 
     const date = p[0];
     const ruleCount = parseInt(p[1]) || 3;
     
-    // 3〜6: 名前
     const p1 = p[2] || '自分';
     const p2 = p[3] || '相手1';
     const p3 = p[4] || '相手2';
     const p4 = p[5] || '相手3';
     const names = ruleCount === 3 ? [p1, p2, p3] : [p1, p2, p3, p4];
 
-    // 7〜11: 対局数・着順
     const totalHanso = parseInt(p[6]) || 1;
     const r1 = parseInt(p[7]) || 0;
     const r2 = parseInt(p[8]) || 0;
     const r3 = parseInt(p[9]) || 0;
     const r4 = parseInt(p[10]) || 0;
 
-    // 12〜15: 素点計
     const pt1 = parseFloat(p[11]) || 0;
     const pt2 = parseFloat(p[12]) || 0;
     const pt3 = parseFloat(p[13]) || 0;
     const pt4 = parseFloat(p[14]) || 0;
     const totalPts = ruleCount === 3 ? [pt1, pt2, pt3] : [pt1, pt2, pt3, pt4];
 
-    // 16〜19: チップ
     const c1 = parseInt(p[15]) || 0;
     const c2 = parseInt(p[16]) || 0;
     const c3 = parseInt(p[17]) || 0;
     const c4 = parseInt(p[18]) || 0;
     const chips = ruleCount === 3 ? [c1, c2, c3] : [c1, c2, c3, c4];
 
-    // 20〜23: 素収支
     const raw1 = parseFloat(p[19]) || 0;
     const raw2 = parseFloat(p[20]) || 0;
     const raw3 = parseFloat(p[21]) || 0;
     const raw4 = parseFloat(p[22]) || 0;
     const rawSyushi = ruleCount === 3 ? [raw1, raw2, raw3] : [raw1, raw2, raw3, raw4];
 
-    // 24〜27: 最終収支
     const fin1 = parseFloat(p[23]) || 0;
     const fin2 = parseFloat(p[24]) || 0;
     const fin3 = parseFloat(p[25]) || 0;
     const fin4 = parseFloat(p[26]) || 0;
     const finals = ruleCount === 3 ? [fin1, fin2, fin3] : [fin1, fin2, fin3, fin4];
 
-    // 場代の逆算
     const sumRaw = rawSyushi.reduce((a,b)=>a+b, 0);
     const sumFin = finals.reduce((a,b)=>a+b, 0);
     const calculatedGameFee = Math.max(0, Math.round(sumRaw - sumFin));
 
-    // 合計素点と完全一致するダミースコア行を作成（1行目に全素点、残り行は0）
     let dummyScores = [];
     dummyScores.push([...totalPts]);
     for(let k=1; k<totalHanso; k++) {
@@ -802,7 +876,7 @@ function executeCsvImport() {
       pCount: ruleCount,
       names,
       scores: dummyScores,
-      ranksHistory: [r1, r2, r3, r4], // 着順回数を完全保持
+      ranksHistory: [r1, r2, r3, r4],
       totalPtsHistory: totalPts,
       chips,
       rawSyushi,
@@ -842,7 +916,6 @@ function clearAllData() {
   }
 }
 
-// 履歴一覧
 function renderHistory() {
   const list = document.getElementById('history-list');
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -886,7 +959,6 @@ function renderHistory() {
           <div>平均 <b class="text-[#4A5D4E]">${avgRank}</b></div>
         </div>
 
-        <!-- 素収支をメインに表示 -->
         <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2.5 rounded-lg border border-[#D1D8CD] text-xs">
           ${m.names.map((n, i) => {
             const raw = (m.rawSyushi && m.rawSyushi[i] !== undefined) ? m.rawSyushi[i] : m.finals[i];
@@ -909,7 +981,6 @@ function renderHistory() {
   }).join('');
 }
 
-// 編集画面を開く
 function editMatch(id) {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const m = history.find(item => item.id === id);
