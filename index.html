@@ -98,27 +98,27 @@
         <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline font-medium">名前変更</button>
       </div>
       
-      <!-- 着順グリッド -->
+      <!-- 着順グリッド（小数点第1位表示） -->
       <div id="rank-grid" class="grid grid-cols-3 gap-1 text-center mb-3">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">1着</div>
           <div id="st-1st" class="text-base font-bold">0回</div>
-          <div id="st-1st-rate" class="text-[9px] text-gray-400">0%</div>
+          <div id="st-1st-rate" class="text-[9px] text-gray-400">0.0%</div>
         </div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">2着</div>
           <div id="st-2nd" class="text-base font-bold">0回</div>
-          <div id="st-2nd-rate" class="text-[9px] text-gray-400">0%</div>
+          <div id="st-2nd-rate" class="text-[9px] text-gray-400">0.0%</div>
         </div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">3着</div>
           <div id="st-3rd" class="text-base font-bold">0回</div>
-          <div id="st-3rd-rate" class="text-[9px] text-gray-400">0%</div>
+          <div id="st-3rd-rate" class="text-[9px] text-gray-400">0.0%</div>
         </div>
         <div id="box-st-4th" class="bg-white p-2 rounded-lg border border-[#D1D8CD] hidden">
           <div class="text-[10px] text-gray-500">4着</div>
           <div id="st-4th" class="text-base font-bold">0回</div>
-          <div id="st-4th-rate" class="text-[9px] text-gray-400">0%</div>
+          <div id="st-4th-rate" class="text-[9px] text-gray-400">0.0%</div>
         </div>
       </div>
 
@@ -130,7 +130,7 @@
         </div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
           <div class="text-[10px] text-gray-500 mb-0.5">トップ率</div>
-          <div id="st-toprate" class="font-bold text-sm">0%</div>
+          <div id="st-toprate" class="font-bold text-sm">0.0%</div>
         </div>
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
           <div class="text-[10px] text-gray-500 mb-0.5">平均着順</div>
@@ -159,7 +159,7 @@
       </div>
     </div>
 
-    <!-- 収支推移 複合グラフ（棒グラフ＋折れ線） -->
+    <!-- 収支推移 複合グラフ -->
     <div class="card p-4 shadow-sm">
       <div class="flex justify-between items-center mb-1">
         <h3 class="font-bold text-xs text-[#4A5D4E]"><span id="graph-title-label">生涯</span> 収支推移グラフ</h3>
@@ -347,7 +347,7 @@
         </div>
       </div>
 
-      <!-- CSVデータ一括インポート（4人回し3麻自動判別対応） -->
+      <!-- CSVデータ一括インポート -->
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
           <span>📥 雀簿CSVテキストから取り込み</span>
@@ -356,9 +356,37 @@
           3人麻雀・4人麻雀・4人回し3麻をすべて自動判定して正しく復元します。
         </p>
         <textarea id="import-csv-textarea" rows="3" placeholder="雀簿から生成したCSVテキストを貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
-        <button onclick="executeCsvImport()" class="w-full py-2 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
-          CSVデータを登録する
-        </button>
+        
+        <div class="space-y-1.5">
+          <button onclick="executeCsvImport()" class="w-full py-2 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
+            CSVデータを登録する
+          </button>
+          
+          <!-- CSV形式ガイド確認ボタン -->
+          <button onclick="toggleCsvFormatGuide()" class="w-full py-1.5 bg-gray-100 border border-gray-300 text-gray-700 rounded font-bold text-[11px] hover:bg-gray-200 flex items-center justify-center gap-1">
+            <span>📋</span><span>取り込み用CSVの形式を確認する</span><span id="csv-guide-arrow">▼</span>
+          </button>
+        </div>
+
+        <!-- CSV形式ガイド（アコーディオン） -->
+        <div id="csv-format-guide" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-[10px] space-y-2 text-gray-600 font-mono">
+          <div class="font-bold text-gray-800 border-b pb-1">【CSV列順序（全27列）】</div>
+          <div class="leading-relaxed">
+            1: 日付 (YYYY-MM-DD)<br>
+            2: 麻雀種別 (3 or 4)<br>
+            3〜6: P1〜P4 名前 (3麻時はP4空欄)<br>
+            7: 総半荘数<br>
+            8〜11: P1の1着〜4着回数<br>
+            12〜15: P1〜P4 素点計<br>
+            16〜19: P1〜P4 チップ枚数<br>
+            20〜23: P1〜P4 素収支(場代無)<br>
+            24〜27: P1〜P4 最終収支(場代込)
+          </div>
+          <div class="bg-white p-1.5 rounded border border-gray-200 text-[9px] break-all leading-tight text-gray-500">
+            <strong>例（4人回し3麻）:</strong><br>
+            2026-08-16,3,mor,ありけ,の,さとう,7,2,3,2,0,-225.0,404.0,-326.0,147.0,-15,4,-1,12,-27000,41600,-32900,18300,-29680,38920,-35570,15630
+          </div>
+        </div>
       </div>
 
       <div class="border-t pt-3 space-y-1">
@@ -461,6 +489,13 @@ function openSettingsModal() {
 
 function closeSettingsModal() {
   document.getElementById('modal-settings').classList.add('hidden');
+}
+
+function toggleCsvFormatGuide() {
+  const guide = document.getElementById('csv-format-guide');
+  const arrow = document.getElementById('csv-guide-arrow');
+  guide.classList.toggle('hidden');
+  arrow.innerText = guide.classList.contains('hidden') ? '▼' : '▲';
 }
 
 function saveMyNameFromSettings() {
@@ -951,7 +986,6 @@ function initNewMatchSheet() {
   calcTotals();
 }
 
-// 4人回し3麻を完全自動判定するCSVインポート
 function executeCsvImport() {
   const text = document.getElementById('import-csv-textarea').value.trim();
   if(!text) {
@@ -977,7 +1011,6 @@ function executeCsvImport() {
     const p3 = p[4] || '相手2';
     const p4 = p[5] || '';
     
-    // 4人目の有効判定（4人回し3麻の自動検出）
     const has4th = (p4 !== '' && p4 !== '-' && p4 !== 'ー' && (p[26] !== undefined && p[26] !== '' && p[26] !== '0'));
     const cap = (ruleCount === 4 || has4th) ? 4 : 3;
     const names = cap === 3 ? [p1, p2, p3] : [p1, p2, p3, p4];
@@ -1025,8 +1058,8 @@ function executeCsvImport() {
     const matchData = {
       id: Date.now() + idx,
       date,
-      pCount: ruleCount,      // 卓ルールは「3」として保存
-      capacity: cap,          // 参加者は「4」として保持
+      pCount: ruleCount,
+      capacity: cap,
       names,
       scores: dummyScores,
       ranksHistory: [r1, r2, r3, r4],
@@ -1253,7 +1286,7 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
-// 4人回し3麻も「3人麻雀」に含めて正確に集計
+// 確率を小数点第1位まで表示する集計
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1263,7 +1296,6 @@ function renderHome() {
   const targetMonth = document.getElementById('select-month').value;
 
   let filtered = history.filter(m => {
-    // 4人回し3麻(pCount=3)も currentRule=3 の時に正しくヒット
     if(currentRule !== 'all' && m.pCount !== currentRule) return false;
     if(currentPeriod === 'year' && !m.date.startsWith(targetYear)) return false;
     if(currentPeriod === 'month' && !m.date.startsWith(targetMonth)) return false;
@@ -1308,13 +1340,14 @@ function renderHome() {
   document.getElementById('st-3rd').innerText = `${posCounts[2]}回`;
   document.getElementById('st-4th').innerText = `${posCounts[3]}回`;
   
-  document.getElementById('st-1st-rate').innerText = totalRanks ? `${Math.round(posCounts[0]/totalRanks*100)}%` : '0%';
-  document.getElementById('st-2nd-rate').innerText = totalRanks ? `${Math.round(posCounts[1]/totalRanks*100)}%` : '0%';
-  document.getElementById('st-3rd-rate').innerText = totalRanks ? `${Math.round(posCounts[2]/totalRanks*100)}%` : '0%';
-  document.getElementById('st-4th-rate').innerText = totalRanks ? `${Math.round(posCounts[3]/totalRanks*100)}%` : '0%';
+  // 小数点第1位まで表示 (例: 35.2%)
+  document.getElementById('st-1st-rate').innerText = totalRanks ? `${(posCounts[0] / totalRanks * 100).toFixed(1)}%` : '0.0%';
+  document.getElementById('st-2nd-rate').innerText = totalRanks ? `${(posCounts[1] / totalRanks * 100).toFixed(1)}%` : '0.0%';
+  document.getElementById('st-3rd-rate').innerText = totalRanks ? `${(posCounts[2] / totalRanks * 100).toFixed(1)}%` : '0.0%';
+  document.getElementById('st-4th-rate').innerText = totalRanks ? `${(posCounts[3] / totalRanks * 100).toFixed(1)}%` : '0.0%';
 
   document.getElementById('st-totalhanso').innerText = `${totalHanso} 半荘`;
-  document.getElementById('st-toprate').innerText = totalRanks ? `${Math.round(posCounts[0]/totalRanks*100)}%` : '0%';
+  document.getElementById('st-toprate').innerText = totalRanks ? `${(posCounts[0] / totalRanks * 100).toFixed(1)}%` : '0.0%';
   
   const avg = totalRanks ? ((posCounts[0]*1 + posCounts[1]*2 + posCounts[2]*3 + posCounts[3]*4) / totalRanks).toFixed(2) : '0.00';
   document.getElementById('st-avgpos').innerText = avg;
@@ -1331,7 +1364,7 @@ function renderHome() {
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
   chipEl.className = `font-bold ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
 
-  // 雀簿スタイル：棒グラフ（期間収支）＆ 折れ線（累計推移）
+  // 複合グラフ描画
   let graphLabels = [];
   let periodBarData = [];
   let cumulativeLineData = [];
