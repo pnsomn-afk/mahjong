@@ -223,7 +223,7 @@
       </div>
     </div>
 
-    <!-- スコア入力シート（4人回し対応） -->
+    <!-- スコア入力シート -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
         <thead>
@@ -347,10 +347,14 @@
         </div>
       </div>
 
+      <!-- CSVデータ一括インポート（4人回し3麻自動判別対応） -->
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
           <span>📥 雀簿CSVテキストから取り込み</span>
         </label>
+        <p class="text-[10px] text-gray-500 leading-tight">
+          3人麻雀・4人麻雀・4人回し3麻をすべて自動判定して正しく復元します。
+        </p>
         <textarea id="import-csv-textarea" rows="3" placeholder="雀簿から生成したCSVテキストを貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
         <button onclick="executeCsvImport()" class="w-full py-2 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
           CSVデータを登録する
@@ -404,8 +408,8 @@
 </nav>
 
 <script>
-let tablePlayerCapacity = 3; // 画面上のプレイヤー列数 (3 or 4)
-let baseMatchRule = 3;        // 卓ルール (3人打ち or 4人打ち)
+let tablePlayerCapacity = 3; 
+let baseMatchRule = 3;        
 let rowCount = 0;
 let editTargetId = null;
 let chartInstance = null;
@@ -537,7 +541,6 @@ function importBackupData(e) {
   reader.readAsText(file);
 }
 
-// 卓ルール切り替え（3人打ち / 4人打ち）
 function setBaseRule(rule) {
   baseMatchRule = rule;
   document.getElementById('btn-p3').className = rule === 3 ? 'flex-1 h-full py-1 text-xs rounded font-bold bg-[#4A5D4E] text-white transition-all' : 'flex-1 h-full py-1 text-xs rounded font-bold text-gray-600 transition-all';
@@ -549,7 +552,6 @@ function setBaseRule(rule) {
   calcTotals();
 }
 
-// 4人目の列を追加・展開（途中追加対応）
 function enable4thPlayer(is4manRule = false) {
   tablePlayerCapacity = 4;
   document.getElementById('th-p3').classList.remove('hidden');
@@ -565,7 +567,6 @@ function enable4thPlayer(is4manRule = false) {
   const cells = document.querySelectorAll('.cell-p3');
   cells.forEach(el => el.classList.remove('hidden'));
 
-  // 既に存在していた過去行の4人目を「ー（抜け番）」にする（3人打ち時）
   if(baseMatchRule === 3 && !is4manRule) {
     const rows = document.getElementById('score-rows').querySelectorAll('tr');
     rows.forEach(tr => {
@@ -621,18 +622,15 @@ function removeRow(rId) {
   }
 }
 
-// 4人回し3麻のスマート自動補完・ハイフン解除システム
 function onScoreFocus(rId, pIdx) {
   const currentInp = document.getElementById(`score-${rId}-${pIdx}`);
   if(!currentInp) return;
 
-  // 「ー」をタップした場合、即座に解除して入力待ちにする
   if(currentInp.value === 'ー') {
     currentInp.value = '';
     currentInp.classList.remove('text-gray-400', 'font-normal');
   }
 
-  // 既に数値が入っている人はカウント
   let filledValues = [];
   let emptyIndices = [];
 
@@ -648,7 +646,6 @@ function onScoreFocus(rId, pIdx) {
     }
   }
 
-  // 「卓ルール-1人」が入力済みで、このマスをタップした場合 ➔ 自動補完＆残り1人を「ー」に確定
   if(filledValues.length === baseMatchRule - 1) {
     const sum = filledValues.reduce((a,b)=>a+b.val, 0);
     const complement = Math.round((-sum) * 10) / 10;
@@ -656,7 +653,6 @@ function onScoreFocus(rId, pIdx) {
     currentInp.value = complement;
     onScoreInput(rId, pIdx);
 
-    // 4人回し3麻の場合、残りの1人を自動で「ー」にする
     if(baseMatchRule === 3 && tablePlayerCapacity === 4) {
       for(let i=0; i<4; i++) {
         if(i !== pIdx && !filledValues.some(f => f.idx === i)) {
@@ -671,7 +667,6 @@ function onScoreFocus(rId, pIdx) {
   }
 }
 
-// 入力・削除時の連動処理
 function onScoreInput(rId, pIdx) {
   const input = document.getElementById(`score-${rId}-${pIdx}`);
   if(!input) return;
@@ -679,7 +674,6 @@ function onScoreInput(rId, pIdx) {
   const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
   const badge = document.getElementById(`tobi-badge-${rId}-${pIdx}`);
 
-  // スコアを空欄にした場合 ➔ 連動していた「ー」も自動解除して空欄に戻す
   if(rawText === '') {
     input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
     if(badge) badge.classList.add('hidden');
@@ -758,7 +752,6 @@ function autoCompleteChip(pIdx) {
   }
 }
 
-// 各人の素点計・素収支・場代込収支の計算
 function calcTotals() {
   const rate = parseFloat(document.getElementById('cfg-rate').value) || 0;
   const chipRate = parseFloat(document.getElementById('cfg-chip').value) || 0;
@@ -958,6 +951,7 @@ function initNewMatchSheet() {
   calcTotals();
 }
 
+// 4人回し3麻を完全自動判定するCSVインポート
 function executeCsvImport() {
   const text = document.getElementById('import-csv-textarea').value.trim();
   if(!text) {
@@ -981,11 +975,11 @@ function executeCsvImport() {
     const p1 = p[2] || '自分';
     const p2 = p[3] || '相手1';
     const p3 = p[4] || '相手2';
-    const p4 = p[5] || '相手3';
+    const p4 = p[5] || '';
     
-    // 4人目の名前があるか確認（4人回し3麻の検出）
-    const has4th = (p4 && p4 !== '' && p4 !== '-');
-    const cap = has4th ? 4 : (ruleCount === 4 ? 4 : 3);
+    // 4人目の有効判定（4人回し3麻の自動検出）
+    const has4th = (p4 !== '' && p4 !== '-' && p4 !== 'ー' && (p[26] !== undefined && p[26] !== '' && p[26] !== '0'));
+    const cap = (ruleCount === 4 || has4th) ? 4 : 3;
     const names = cap === 3 ? [p1, p2, p3] : [p1, p2, p3, p4];
 
     const totalHanso = parseInt(p[6]) || 1;
@@ -1031,8 +1025,8 @@ function executeCsvImport() {
     const matchData = {
       id: Date.now() + idx,
       date,
-      pCount: ruleCount,
-      capacity: cap,
+      pCount: ruleCount,      // 卓ルールは「3」として保存
+      capacity: cap,          // 参加者は「4」として保持
       names,
       scores: dummyScores,
       ranksHistory: [r1, r2, r3, r4],
@@ -1259,7 +1253,7 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
-// ホーム戦績・雀簿スタイル複合グラフ（棒＋折れ線）
+// 4人回し3麻も「3人麻雀」に含めて正確に集計
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1269,6 +1263,7 @@ function renderHome() {
   const targetMonth = document.getElementById('select-month').value;
 
   let filtered = history.filter(m => {
+    // 4人回し3麻(pCount=3)も currentRule=3 の時に正しくヒット
     if(currentRule !== 'all' && m.pCount !== currentRule) return false;
     if(currentPeriod === 'year' && !m.date.startsWith(targetYear)) return false;
     if(currentPeriod === 'month' && !m.date.startsWith(targetMonth)) return false;
@@ -1336,7 +1331,7 @@ function renderHome() {
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
   chipEl.className = `font-bold ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
 
-  // 雀簿スタイル：棒グラフ（期間収支）＆ 折れ線（累計推移）のデータ構築
+  // 雀簿スタイル：棒グラフ（期間収支）＆ 折れ線（累計推移）
   let graphLabels = [];
   let periodBarData = [];
   let cumulativeLineData = [];
@@ -1390,7 +1385,6 @@ function renderHome() {
     });
   }
 
-  // 棒グラフの色分け（プラスは青紫 #6B7C96、マイナスは赤 #DC2626）
   const barColors = periodBarData.map(v => v >= 0 ? 'rgba(107, 124, 150, 0.75)' : 'rgba(220, 38, 38, 0.75)');
 
   const ctx = document.getElementById('chart-syushi').getContext('2d');
