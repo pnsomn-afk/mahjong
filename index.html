@@ -35,23 +35,25 @@
     <div class="bg-[#4A5D4E] text-white text-xs px-2 py-1 rounded font-bold">牌</div>
     <h1 id="header-title" class="font-bold text-lg text-[#2D3748]">ホーム</h1>
   </div>
-  <span class="text-xs text-[#8C9A8E] font-medium tracking-wider">MAHJONG SCORE</span>
+  <div class="flex items-center space-x-3">
+    <button onclick="openSettingsModal()" class="text-sm text-[#4A5D4E] hover:text-gray-800 p-1">⚙️ 設定</button>
+  </div>
 </header>
 
 <!-- メイン表示領域 -->
 <main id="main-content" class="flex-1 overflow-y-auto p-3 pb-24">
   
-  <!-- 【1. ホーム（戦績・期間別・グラフ）画面】 -->
+  <!-- 【1. ホーム画面】 -->
   <div id="view-home" class="space-y-3">
     
-    <!-- 麻雀種別タブ (3麻 / 4麻 / 全体) -->
+    <!-- 麻雀種別タブ -->
     <div class="flex bg-gray-200/80 rounded-lg p-0.5 text-xs">
       <button onclick="setRuleFilter('all')" id="btn-rule-all" class="flex-1 py-1.5 rounded-md font-bold text-gray-600">全体</button>
       <button onclick="setRuleFilter(3)" id="btn-rule-3" class="flex-1 py-1.5 rounded-md font-bold bg-[#4A5D4E] text-white">3人麻雀</button>
       <button onclick="setRuleFilter(4)" id="btn-rule-4" class="flex-1 py-1.5 rounded-md font-bold text-gray-600">4人麻雀</button>
     </div>
 
-    <!-- 期間切り替えバー (生涯 / 年別 / 月別) -->
+    <!-- 期間切り替えバー -->
     <div class="card p-2 shadow-sm flex items-center justify-between gap-1 text-xs">
       <div class="flex bg-gray-200 rounded-lg p-0.5 flex-1">
         <button onclick="setPeriodFilter('all')" id="btn-period-all" class="flex-1 py-1 rounded font-bold bg-[#4A5D4E] text-white">生涯</button>
@@ -71,7 +73,7 @@
         <button onclick="changeMyNameModal()" class="text-[11px] text-[#4A5D4E] underline font-medium">名前変更</button>
       </div>
       
-      <!-- 着順グリッド（3麻時は4着非表示） -->
+      <!-- 着順グリッド -->
       <div id="rank-grid" class="grid grid-cols-3 gap-1 text-center mb-3">
         <div class="bg-white p-2 rounded-lg border border-[#D1D8CD]">
           <div class="text-[10px] text-gray-500">1着</div>
@@ -132,7 +134,6 @@
 
   <!-- 【2. 入力画面】 -->
   <div id="view-input" class="space-y-3 hidden">
-    <!-- 対局情報・ルール設定 -->
     <div class="card p-3 shadow-sm">
       <div class="flex justify-between items-center cursor-pointer" onclick="toggleConfig()">
         <span class="font-bold text-sm text-[#4A5D4E]">対局情報・ルール設定</span>
@@ -233,13 +234,11 @@
         </tfoot>
       </table>
 
-      <!-- 行追加ボタン -->
       <button onclick="addRow()" class="w-full mt-3 py-2.5 border border-dashed border-[#8C9A8E] text-[#4A5D4E] rounded-lg text-xs font-bold bg-white active:bg-gray-100 flex items-center justify-center gap-1">
         <span>＋</span><span>半荘を追加</span>
       </button>
     </div>
 
-    <!-- 登録ボタン -->
     <div class="pt-2">
       <button onclick="saveMatch()" id="btn-save-match" class="w-full py-3.5 rounded-xl btn-main text-base font-bold shadow-md active:opacity-90 flex items-center justify-center gap-2">
         <span>対局結果を登録する</span>
@@ -255,7 +254,57 @@
 
 </main>
 
-<!-- 相手別成績モーダル（直接対決差分カード） -->
+<!-- 設定モーダル（完全版CSV一括インポート対応） -->
+<div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-4 shadow-xl max-h-[90vh] flex flex-col">
+    <div class="flex justify-between items-center border-b pb-2">
+      <h3 class="font-bold text-sm text-gray-800">⚙️ アプリ設定</h3>
+      <button onclick="closeSettingsModal()" class="text-gray-400 text-sm font-bold px-2">✕</button>
+    </div>
+
+    <div class="space-y-4 overflow-y-auto flex-1 text-xs">
+      <div class="space-y-1">
+        <label class="font-bold text-gray-700">自分の名前（固定）</label>
+        <div class="flex gap-2">
+          <input type="text" id="settings-myname-input" class="flex-1 bg-gray-50 border border-gray-300 rounded px-2 py-1.5 font-bold outline-none">
+          <button onclick="saveMyNameFromSettings()" class="bg-[#4A5D4E] text-white px-3 py-1.5 rounded font-bold">更新</button>
+        </div>
+      </div>
+
+      <!-- CSVデータ一括インポート -->
+      <div class="space-y-2 border-t pt-3">
+        <label class="font-bold text-gray-700 flex items-center gap-1">
+          <span>📥 過去データ一括インポート (雀簿CSV形式)</span>
+        </label>
+        <p class="text-[11px] text-gray-500 leading-relaxed">
+          AIが生成したCSVテキストを貼り付けて「登録する」を押してください。素収支・チップ・全員の差分がすべて復元されます。
+        </p>
+
+        <div class="bg-gray-100 p-2 rounded text-[10px] text-gray-600 font-mono leading-tight">
+          日付, 人数, P1名〜P4名, 対局数, 1着〜4着回数, P1〜P4素点計, P1〜P4チップ, P1〜P4素収支, P1〜P4最終収支
+        </div>
+
+        <textarea id="import-csv-textarea" rows="4" placeholder="CSVテキストをここに貼り付け" class="w-full bg-gray-50 border border-gray-300 rounded p-2 text-xs font-mono outline-none"></textarea>
+        <button onclick="executeCsvImport()" class="w-full py-2.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow active:opacity-90">
+          データを一括読み込み・登録する
+        </button>
+      </div>
+
+      <!-- データ全消去 -->
+      <div class="border-t pt-3 space-y-1">
+        <label class="font-bold text-red-600">⚠️ データ初期化</label>
+        <p class="text-[10px] text-gray-400">端末に保存された全対局データを完全に削除します。</p>
+        <button onclick="clearAllData()" class="w-full py-2 bg-red-50 text-red-600 border border-red-200 rounded font-bold text-xs hover:bg-red-100">
+          全データを初期化する
+        </button>
+      </div>
+    </div>
+
+    <button onclick="closeSettingsModal()" class="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold">閉じる</button>
+  </div>
+</div>
+
+<!-- 相手別成績モーダル -->
 <div id="modal-rival" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-3 shadow-xl max-h-[85vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -295,8 +344,8 @@ let rowCount = 0;
 let editTargetId = null;
 let chartInstance = null;
 let currentSelectingPIdx = null;
-let currentPeriod = 'all'; // 'all', 'year', 'month'
-let currentRule = 3;       // 3, 4, 'all'
+let currentPeriod = 'all';
+let currentRule = 3;
 
 document.addEventListener('DOMContentLoaded', () => {
   const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -329,25 +378,45 @@ function toggleConfig() {
   arrow.innerText = body.classList.contains('hidden') ? '▲' : '▼';
 }
 
+function openSettingsModal() {
+  const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
+  document.getElementById('settings-myname-input').value = savedMyName;
+  document.getElementById('modal-settings').classList.remove('hidden');
+}
+
+function closeSettingsModal() {
+  document.getElementById('modal-settings').classList.add('hidden');
+}
+
+function saveMyNameFromSettings() {
+  const val = document.getElementById('settings-myname-input').value.trim();
+  if(val) {
+    applyNewMyName(val);
+    alert('名前を更新しました。');
+  }
+}
+
 function changeMyNameModal() {
   const current = localStorage.getItem('mahjong_my_name') || '自分';
   const newName = prompt('自分の名前（固定）を入力してください:', current);
   if(newName && newName.trim() !== '') {
-    const trimmed = newName.trim();
-    localStorage.setItem('mahjong_my_name', trimmed);
-    document.getElementById('pname-0').value = trimmed;
-    
-    // 過去履歴のP1名前も一括同期
-    let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
-    history = history.map(m => {
-      if(m.names && m.names.length > 0) m.names[0] = trimmed;
-      return m;
-    });
-    localStorage.setItem('mahjong_history', JSON.stringify(history));
-
-    renderHome();
-    renderHistory();
+    applyNewMyName(newName.trim());
   }
+}
+
+function applyNewMyName(name) {
+  localStorage.setItem('mahjong_my_name', name);
+  document.getElementById('pname-0').value = name;
+  
+  let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
+  history = history.map(m => {
+    if(m.names && m.names.length > 0) m.names[0] = name;
+    return m;
+  });
+  localStorage.setItem('mahjong_history', JSON.stringify(history));
+
+  renderHome();
+  renderHistory();
 }
 
 function setPlayerCount(num) {
@@ -511,7 +580,6 @@ function calcTotals() {
     syuEl.className = `py-2 font-bold ${syushi[p] > 0 ? 'score-pos' : syushi[p] < 0 ? 'score-neg' : ''}`;
   }
 
-  // ゲーム代分配（端数は1位、2位、3位の順で100円ずつ負担）
   let finalSyushi = [...syushi];
   if(gameFee > 0) {
     const baseFeePerPerson = Math.floor(gameFee / pCount / 100) * 100;
@@ -648,13 +716,131 @@ function initNewMatchSheet() {
   rowCount = 0;
   setTodayDate();
   for(let i=0; i<4; i++) addRow();
-  for(let i=1; i<4; i++) document.getElementById(`pname-${i}`).value = ''; // 相手枠は空白
-  for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';  // チップは空白
-  document.getElementById('cfg-gamefee').value = ''; // ゲーム代は空白
+  for(let i=1; i<4; i++) document.getElementById(`pname-${i}`).value = '';
+  for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';
+  document.getElementById('cfg-gamefee').value = '';
   calcTotals();
 }
 
-// 履歴一覧（日付降順で厳格ソート）
+// 改修版CSV一括インポート（全素点・全チップ・全素収支・全最終収支の完全復元）
+function executeCsvImport() {
+  const text = document.getElementById('import-csv-textarea').value.trim();
+  if(!text) {
+    alert('CSVテキストを貼り付けてください。');
+    return;
+  }
+
+  const lines = text.split('\n');
+  let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
+  let successCount = 0;
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if(!trimmed) return;
+    const parts = trimmed.split(',').map(s => s.trim());
+    if(parts.length < 15) return;
+
+    const date = parts[0];
+    const ruleCount = parseInt(parts[1]) || 3;
+    
+    // 名前 (P1〜P4)
+    const p1 = parts[2] || '自分';
+    const p2 = parts[3] || '相手1';
+    const p3 = parts[4] || '相手2';
+    const p4 = parts[5] || '相手3';
+    const names = ruleCount === 3 ? [p1, p2, p3] : [p1, p2, p3, p4];
+
+    // 対局数 & 自分の着順回数
+    const totalHanso = parseInt(parts[6]) || 1;
+    const r1 = parseInt(parts[7]) || 0;
+    const r2 = parseInt(parts[8]) || 0;
+    const r3 = parseInt(parts[9]) || 0;
+    const r4 = parseInt(parts[10]) || 0;
+
+    // 各人の素点計 (P1〜P4)
+    const pt1 = parseFloat(parts[11]) || 0;
+    const pt2 = parseFloat(parts[12]) || 0;
+    const pt3 = parseFloat(parts[13]) || 0;
+    const pt4 = parseFloat(parts[14]) || 0;
+    const totalPts = ruleCount === 3 ? [pt1, pt2, pt3] : [pt1, pt2, pt3, pt4];
+
+    // 各人のチップ枚数 (P1〜P4)
+    const c1 = parseInt(parts[15]) || 0;
+    const c2 = parseInt(parts[16]) || 0;
+    const c3 = parseInt(parts[17]) || 0;
+    const c4 = parseInt(parts[18]) || 0;
+    const chips = ruleCount === 3 ? [c1, c2, c3] : [c1, c2, c3, c4];
+
+    // 各人の素収支 (P1〜P4)
+    const raw1 = parseFloat(parts[19]) || 0;
+    const raw2 = parseFloat(parts[20]) || 0;
+    const raw3 = parseFloat(parts[21]) || 0;
+    const raw4 = parseFloat(parts[22]) || 0;
+    const rawSyushi = ruleCount === 3 ? [raw1, raw2, raw3] : [raw1, raw2, raw3, raw4];
+
+    // 各人の最終収支 (P1〜P4)
+    const fin1 = parseFloat(parts[23]) || 0;
+    const fin2 = parseFloat(parts[24]) || 0;
+    const fin3 = parseFloat(parts[25]) || 0;
+    const fin4 = parseFloat(parts[26]) || 0;
+    const finals = ruleCount === 3 ? [fin1, fin2, fin3] : [fin1, fin2, fin3, fin4];
+
+    // 着順回数に合わせたダミースコア行生成（平均着順・着順率用）
+    let dummyScores = [];
+    for(let k=0; k<r1; k++) dummyScores.push(ruleCount === 3 ? [30, -10, -20] : [30, 10, -10, -30]);
+    for(let k=0; k<r2; k++) dummyScores.push(ruleCount === 3 ? [0, 20, -20] : [10, 30, -10, -30]);
+    for(let k=0; k<r3; k++) dummyScores.push(ruleCount === 3 ? [-30, 20, 10] : [-10, 30, 10, -30]);
+    for(let k=0; k<r4; k++) dummyScores.push([ -30, 30, 10, -10 ]);
+    
+    while(dummyScores.length < totalHanso) {
+      dummyScores.push(ruleCount === 3 ? [0, 0, 0] : [0, 0, 0, 0]);
+    }
+
+    const matchData = {
+      id: Date.now() + idx,
+      date,
+      pCount: ruleCount,
+      names,
+      scores: dummyScores,
+      totalPtsHistory: totalPts, // 素点計を保存
+      chips,
+      rawSyushi,
+      finals,
+      rate: 100,
+      chipRate: 300,
+      gameFee: 0,
+      tobiLimit: -65
+    };
+
+    history.push(matchData);
+    successCount++;
+  });
+
+  if(successCount > 0) {
+    localStorage.setItem('mahjong_history', JSON.stringify(history));
+    alert(`${successCount} 件の対局履歴を完全復元インポートしました！`);
+    document.getElementById('import-csv-textarea').value = '';
+    closeSettingsModal();
+    initPeriodSelectors();
+    renderHistory();
+    renderHome();
+  } else {
+    alert('インポート可能なデータが見つかりませんでした。フォーマットを確認してください。');
+  }
+}
+
+function clearAllData() {
+  if(confirm('本当にすべての対局データを削除しますか？この操作は取り消せません。')) {
+    localStorage.removeItem('mahjong_history');
+    alert('データを全削除しました。');
+    closeSettingsModal();
+    initNewMatchSheet();
+    initPeriodSelectors();
+    renderHistory();
+    renderHome();
+  }
+}
+
 function renderHistory() {
   const list = document.getElementById('history-list');
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
@@ -663,7 +849,6 @@ function renderHistory() {
     return;
   }
 
-  // 日付の新しい順（降順）にソート
   history.sort((a, b) => b.date.localeCompare(a.date));
 
   list.innerHTML = history.map(m => {
@@ -686,7 +871,6 @@ function renderHistory() {
           </div>
         </div>
 
-        <!-- 自分のミニスタッツ -->
         <div class="bg-gray-100/70 p-2 rounded-lg text-xs flex justify-between items-center text-gray-700">
           <div class="space-x-2">
             <span class="font-bold text-[#4A5D4E]">自分:</span>
@@ -698,7 +882,6 @@ function renderHistory() {
           <div>平均 <b class="text-[#4A5D4E]">${avgRank}</b></div>
         </div>
 
-        <!-- 全員の点数グリッド -->
         <div class="grid grid-cols-${m.pCount} gap-1 text-center bg-white p-2 rounded-lg border border-[#D1D8CD] text-xs">
           ${m.names.map((n, i) => `
             <div>
@@ -782,7 +965,6 @@ function setRuleFilter(rule) {
   const ruleLabels = { all: '全ルール', 3: '3人麻雀', 4: '4人麻雀' };
   document.getElementById('stats-rule-label').innerText = ruleLabels[rule];
 
-  // 3麻選択時は4着枠を非表示、4麻/全体時は4着枠を表示
   const rankGrid = document.getElementById('rank-grid');
   const box4th = document.getElementById('box-st-4th');
   if(rule === 3) {
@@ -818,7 +1000,6 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
-// ホーム戦績・グラフ更新
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -827,7 +1008,6 @@ function renderHome() {
   const targetYear = document.getElementById('select-year').value;
   const targetMonth = document.getElementById('select-month').value;
 
-  // ルール・期間フィルタリング
   let filtered = history.filter(m => {
     if(currentRule !== 'all' && m.pCount !== currentRule) return false;
     if(currentPeriod === 'year' && !m.date.startsWith(targetYear)) return false;
@@ -835,7 +1015,6 @@ function renderHome() {
     return true;
   });
 
-  // 日付の古い順（昇順）にソートして集計・グラフ計算
   filtered.sort((a, b) => a.date.localeCompare(b.date));
 
   let posCounts = [0, 0, 0, 0];
@@ -894,7 +1073,6 @@ function renderHome() {
 
   document.getElementById('st-tobirate').innerText = totalHanso ? `${Math.round(tobiCount/totalHanso*100)}%` : '0%';
 
-  // グラフデータ生成（期間別の横軸）
   let graphLabels = [];
   let graphData = [];
 
@@ -962,6 +1140,7 @@ function renderHome() {
   });
 }
 
+// 相手別成績（素点差・チップ差・最終収支差を完全集計）
 function openRivalModal() {
   const history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -972,8 +1151,13 @@ function openRivalModal() {
     const myFin = m.finals[0] || 0;
     const myChip = (m.chips && m.chips[0] !== undefined) ? m.chips[0] : 0;
     
-    let myTotalScore = 0;
-    m.scores.forEach(r => { myTotalScore += (r[0] || 0); });
+    // 素点計（インポートデータがある場合はtotalPtsHistoryを使用）
+    let myScore = 0;
+    if(m.totalPtsHistory && m.totalPtsHistory[0] !== undefined) {
+      myScore = m.totalPtsHistory[0];
+    } else {
+      m.scores.forEach(r => { myScore += (r[0] || 0); });
+    }
 
     m.names.forEach((name, i) => {
       if(i !== 0 && name && name.trim() !== '' && name !== myName) {
@@ -982,15 +1166,22 @@ function openRivalModal() {
         }
         rivals[name].count += m.scores.length;
         
+        // 相手との収支差
         const oppFin = m.finals[i] || 0;
         rivals[name].syushiDiff += (myFin - oppFin);
 
+        // 相手とのチップ差
         const oppChip = (m.chips && m.chips[i] !== undefined) ? m.chips[i] : 0;
         rivals[name].chipDiff += (myChip - oppChip);
 
-        let oppTotalScore = 0;
-        m.scores.forEach(r => { oppTotalScore += (r[i] || 0); });
-        rivals[name].scoreDiff += (myTotalScore - oppTotalScore);
+        // 相手とのスコア差
+        let oppScore = 0;
+        if(m.totalPtsHistory && m.totalPtsHistory[i] !== undefined) {
+          oppScore = m.totalPtsHistory[i];
+        } else {
+          m.scores.forEach(r => { oppScore += (r[i] || 0); });
+        }
+        rivals[name].scoreDiff += (myScore - oppScore);
       }
     });
   });
