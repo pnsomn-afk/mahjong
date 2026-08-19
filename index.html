@@ -41,16 +41,34 @@
   .tab-inactive { color: #8C9A8E; }
   .score-pos { color: #1E40AF; }
   .score-neg { color: #DC2626; }
-  input[type="date"], input[type="month"] {
-    -webkit-appearance: none;
-    appearance: none;
-    min-height: 38px;
-    line-height: normal;
+  
+  /* カスタムキーボード用スタイル */
+  .cell-active {
+    outline: 2.5px solid #4A5D4E !important;
+    background-color: #FFFFFF !important;
   }
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  .numpad-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F7F9F6;
+    color: #2D3748;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 6px;
+    height: 52px;
+    user-select: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .numpad-btn:active {
+    background-color: #D1D8CD;
+  }
+  .numpad-action {
+    background-color: #4A5D4E;
+    color: white;
+  }
+  .numpad-action:active {
+    background-color: #3B4D3F;
   }
 </style>
 </head>
@@ -206,11 +224,11 @@
       <div id="config-body" class="grid grid-cols-2 gap-2 mt-3 text-xs">
         <div>
           <label class="block text-gray-600 mb-1">レート (P/千点)</label>
-          <input type="text" inputmode="numeric" id="cfg-rate" value="100" onfocus="setCurrentActiveInput(this)" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" readonly inputmode="none" id="cfg-rate" value="100" onclick="openKeypad(this, 'config')" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">チップ (P/枚)</label>
-          <input type="text" inputmode="numeric" id="cfg-chip" value="300" onfocus="setCurrentActiveInput(this)" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" readonly inputmode="none" id="cfg-chip" value="300" onclick="openKeypad(this, 'config')" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">日付</label>
@@ -218,11 +236,11 @@
         </div>
         <div>
           <label class="block text-gray-600 mb-1">ゲーム代(総額)</label>
-          <input type="text" inputmode="numeric" id="cfg-gamefee" placeholder="0" onfocus="setCurrentActiveInput(this)" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" readonly inputmode="none" id="cfg-gamefee" placeholder="0" onclick="openKeypad(this, 'config')" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">トビ基準 (以下でトビ)</label>
-          <input type="text" inputmode="decimal" id="cfg-tobi" value="-65" onfocus="setCurrentActiveInput(this)" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" readonly inputmode="none" id="cfg-tobi" value="-65" onclick="openKeypad(this, 'config')" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">基本対局人数 (卓人数)</label>
@@ -279,10 +297,10 @@
           </tr>
           <tr>
             <td class="py-2 text-gray-500">チップ</td>
-            <td class="p-1"><input type="text" inputmode="decimal" id="chip-0" onfocus="autoCompleteChip(0); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="text" inputmode="decimal" id="chip-1" onfocus="autoCompleteChip(1); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="text" inputmode="decimal" id="chip-2" onfocus="autoCompleteChip(2); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td id="td-chip-3" class="p-1 hidden"><input type="text" inputmode="decimal" id="chip-3" onfocus="autoCompleteChip(3); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" readonly inputmode="none" id="chip-0" onclick="onChipCellClick(0)" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold cursor-pointer"></td>
+            <td class="p-1"><input type="text" readonly inputmode="none" id="chip-1" onclick="onChipCellClick(1)" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold cursor-pointer"></td>
+            <td class="p-1"><input type="text" readonly inputmode="none" id="chip-2" onclick="onChipCellClick(2)" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold cursor-pointer"></td>
+            <td id="td-chip-3" class="p-1 hidden"><input type="text" readonly inputmode="none" id="chip-3" onclick="onChipCellClick(3)" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold cursor-pointer"></td>
             <td class="cell-dummy-extra"></td>
           </tr>
           <tr class="bg-[#EAEFE8] border-t border-[#D1D8CD]">
@@ -324,20 +342,29 @@
 
 </main>
 
-<!-- キーボード入力補助バー（＋/ー切替ボタン付き） -->
-<div id="keyboard-accessory-bar" class="hidden fixed bottom-14 left-0 right-0 bg-[#E2E6DE] border-t border-[#D1D8CD] p-1.5 flex items-center justify-between z-40 shadow-md">
-  <div class="flex items-center gap-2">
-    <button onmousedown="event.preventDefault(); togglePlusMinus();" class="bg-[#4A5D4E] active:bg-[#3B4D3F] text-white px-3 py-1.5 rounded-lg text-sm font-black shadow-sm flex items-center gap-1">
-      <span>＋ / −</span>
-      <span class="text-[10px] font-normal opacity-80">(符号反転)</span>
-    </button>
-    <button onmousedown="event.preventDefault(); insertHyphenForActive();" class="bg-white active:bg-gray-200 border border-[#D1D8CD] text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
-      ー (抜け番)
-    </button>
+<!-- 雀簿スタイル専用カスタム・テンキーボード -->
+<div id="custom-keypad-container" class="hidden fixed bottom-0 left-0 right-0 bg-[#E2E6DE] border-t border-[#D1D8CD] p-2 z-50 shadow-2xl pb-6">
+  <div class="max-w-md mx-auto grid grid-cols-4 gap-1.5 text-center">
+    <button onclick="kpPress('1')" class="numpad-btn">1</button>
+    <button onclick="kpPress('2')" class="numpad-btn">2</button>
+    <button onclick="kpPress('3')" class="numpad-btn">3</button>
+    <button onclick="kpBackspace()" class="numpad-btn bg-[#D1D8CD] text-gray-800 font-bold">⌫</button>
+
+    <button onclick="kpPress('4')" class="numpad-btn">4</button>
+    <button onclick="kpPress('5')" class="numpad-btn">5</button>
+    <button onclick="kpPress('6')" class="numpad-btn">6</button>
+    <button onclick="kpToggleMinus()" class="numpad-btn bg-[#D1D8CD] text-gray-800 font-bold">－</button>
+
+    <button onclick="kpPress('7')" class="numpad-btn">7</button>
+    <button onclick="kpPress('8')" class="numpad-btn">8</button>
+    <button onclick="kpPress('9')" class="numpad-btn">9</button>
+    <button onclick="kpPress('.')" class="numpad-btn font-bold">.</button>
+
+    <button onclick="kpMovePrev()" class="numpad-btn font-bold">◀</button>
+    <button onclick="kpPress('0')" class="numpad-btn">0</button>
+    <button onclick="kpMoveNext()" class="numpad-btn font-bold">▶</button>
+    <button onclick="kpDone()" class="numpad-btn numpad-action">✓</button>
   </div>
-  <button onmousedown="event.preventDefault(); closeKeyboard();" class="bg-gray-200 active:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold">
-    完了 ✕
-  </button>
 </div>
 
 <!-- 設定モーダル -->
@@ -470,7 +497,12 @@ let chartInstance = null;
 let currentSelectingPIdx = null;
 let currentPeriod = 'all';
 let currentRule = 3;
-let currentActiveInput = null;
+
+// カスタムキーボード管理
+let activeInputEl = null;
+let activeInputType = null; // 'score', 'chip', 'config'
+let activeRowId = null;
+let activePIdx = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -482,46 +514,274 @@ document.addEventListener('DOMContentLoaded', () => {
   initPeriodSelectors();
   renderHistory();
   renderHome();
-
-  document.addEventListener('focusout', (e) => {
-    setTimeout(() => {
-      if(!document.activeElement || document.activeElement.tagName !== 'INPUT') {
-        document.getElementById('keyboard-accessory-bar').classList.add('hidden');
-      }
-    }, 150);
-  });
 });
 
-function setCurrentActiveInput(inputEl) {
-  currentActiveInput = inputEl;
-  document.getElementById('keyboard-accessory-bar').classList.remove('hidden');
+// カスタムキーボード制御
+function openKeypad(el, type, rId = null, pIdx = null) {
+  if(activeInputEl) activeInputEl.classList.remove('cell-active');
+  
+  activeInputEl = el;
+  activeInputType = type;
+  activeRowId = rId;
+  activePIdx = pIdx;
+
+  activeInputEl.classList.add('cell-active');
+  document.getElementById('custom-keypad-container').classList.remove('hidden');
+
+  // スクロール調整（キーボードで隠れないように）
+  setTimeout(() => {
+    activeInputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
 }
 
-// ＋/ー 符号反転機能
-function togglePlusMinus() {
-  if(!currentActiveInput) return;
-  let val = currentActiveInput.value.trim();
-  if(val === '' || val === 'ー') {
-    currentActiveInput.value = '-';
-  } else if(val === '-') {
-    currentActiveInput.value = '';
-  } else if(val.startsWith('-')) {
-    currentActiveInput.value = val.substring(1);
-  } else {
-    currentActiveInput.value = '-' + val;
+function kpPress(char) {
+  if(!activeInputEl) return;
+  let val = activeInputEl.value;
+  if(val === 'ー') val = '';
+  
+  // 小数点の重複防止
+  if(char === '.' && val.includes('.')) return;
+
+  activeInputEl.value = val + char;
+  triggerActiveInputUpdate();
+}
+
+function kpBackspace() {
+  if(!activeInputEl) return;
+  let val = activeInputEl.value;
+  if(val === 'ー') {
+    activeInputEl.value = '';
+  } else if(val.length > 0) {
+    activeInputEl.value = val.slice(0, -1);
+    if(activeInputEl.value === '-') activeInputEl.value = '';
   }
-  currentActiveInput.dispatchEvent(new Event('input'));
+  triggerActiveInputUpdate();
 }
 
-function insertHyphenForActive() {
-  if(!currentActiveInput) return;
-  currentActiveInput.value = 'ー';
-  currentActiveInput.dispatchEvent(new Event('input'));
+function kpToggleMinus() {
+  if(!activeInputEl) return;
+  let val = activeInputEl.value;
+  if(val === 'ー') val = '';
+
+  if(val.startsWith('-')) {
+    activeInputEl.value = val.substring(1);
+  } else if(val !== '') {
+    activeInputEl.value = '-' + val;
+  } else {
+    activeInputEl.value = '-';
+  }
+  triggerActiveInputUpdate();
 }
 
-function closeKeyboard() {
-  if(currentActiveInput) currentActiveInput.blur();
-  document.getElementById('keyboard-accessory-bar').classList.add('hidden');
+function kpDone() {
+  if(activeInputEl) {
+    activeInputEl.classList.remove('cell-active');
+    activeInputEl = null;
+  }
+  document.getElementById('custom-keypad-container').classList.add('hidden');
+}
+
+function kpMoveNext() {
+  if(!activeInputEl || activeInputType !== 'score') return;
+  let nextP = activePIdx + 1;
+  let nextR = activeRowId;
+  if(nextP >= tablePlayerCapacity) {
+    nextP = 0;
+    nextR++;
+    if(nextR > rowCount) addRow();
+  }
+  const nextEl = document.getElementById(`score-${nextR}-${nextP}`);
+  if(nextEl) onScoreCellClick(nextR, nextP);
+}
+
+function kpMovePrev() {
+  if(!activeInputEl || activeInputType !== 'score') return;
+  let prevP = activePIdx - 1;
+  let prevR = activeRowId;
+  if(prevP < 0) {
+    prevP = tablePlayerCapacity - 1;
+    prevR--;
+  }
+  if(prevR >= 1) {
+    const prevEl = document.getElementById(`score-${prevR}-${prevP}`);
+    if(prevEl) onScoreCellClick(prevR, prevP);
+  }
+}
+
+function triggerActiveInputUpdate() {
+  if(!activeInputEl) return;
+  if(activeInputType === 'score') {
+    onScoreInput(activeRowId, activePIdx);
+  } else {
+    calcTotals();
+  }
+}
+
+// スコアセルをタップした時の処理（自動補完＆キーボード起動）
+function onScoreCellClick(rId, pIdx) {
+  const currentInp = document.getElementById(`score-${rId}-${pIdx}`);
+  if(!currentInp) return;
+
+  if(currentInp.value === 'ー') {
+    currentInp.value = '';
+    currentInp.classList.remove('text-gray-400', 'font-normal');
+  }
+
+  // 既に数値が入っている人はカウント
+  let filledValues = [];
+  for(let i=0; i<tablePlayerCapacity; i++) {
+    const inp = document.getElementById(`score-${rId}-${i}`);
+    if(inp) {
+      const val = inp.value.trim();
+      if(val !== '' && val !== 'ー' && !isNaN(parseFloat(val))) {
+        if(i !== pIdx) filledValues.push({ idx: i, val: parseFloat(val) });
+      }
+    }
+  }
+
+  // 「卓ルール-1人」が入力済みで、このマスをタップした場合 ➔ 自動補完＆残り1人を「ー」に確定
+  if(filledValues.length === baseMatchRule - 1 && currentInp.value === '') {
+    const sum = filledValues.reduce((a,b)=>a+b.val, 0);
+    const complement = Math.round((-sum) * 10) / 10;
+    
+    currentInp.value = complement;
+    onScoreInput(rId, pIdx);
+
+    if(baseMatchRule === 3 && tablePlayerCapacity === 4) {
+      for(let i=0; i<4; i++) {
+        if(i !== pIdx && !filledValues.some(f => f.idx === i)) {
+          const restInp = document.getElementById(`score-${rId}-${i}`);
+          if(restInp && (restInp.value === '' || restInp.value === 'ー')) {
+            restInp.value = 'ー';
+            restInp.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none cursor-pointer';
+          }
+        }
+      }
+    }
+  }
+
+  openKeypad(currentInp, 'score', rId, pIdx);
+}
+
+function onChipCellClick(pIdx) {
+  const selfInput = document.getElementById(`chip-${pIdx}`);
+  if(!selfInput) return;
+
+  // チップの自動計算
+  let filled = 0;
+  let currentSum = 0;
+  for(let i=0; i<tablePlayerCapacity; i++) {
+    if(i !== pIdx) {
+      const inputEl = document.getElementById(`chip-${i}`);
+      if(inputEl && inputEl.value !== '') {
+        const val = parseInt(inputEl.value);
+        if(!isNaN(val)) {
+          filled++;
+          currentSum += val;
+        }
+      }
+    }
+  }
+  if(filled === tablePlayerCapacity - 1 && selfInput.value === '') {
+    selfInput.value = -currentSum;
+    calcTotals();
+  }
+
+  openKeypad(selfInput, 'chip', null, pIdx);
+}
+
+function onScoreInput(rId, pIdx) {
+  const input = document.getElementById(`score-${rId}-${pIdx}`);
+  if(!input) return;
+  const rawText = input.value.trim();
+  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
+  const badge = document.getElementById(`tobi-badge-${rId}-${pIdx}`);
+
+  if(rawText === '') {
+    input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer';
+    if(badge) badge.classList.add('hidden');
+
+    // 消去時、連動していた「ー」も自動解除
+    if(baseMatchRule === 3 && tablePlayerCapacity === 4) {
+      for(let i=0; i<4; i++) {
+        const otherInp = document.getElementById(`score-${rId}-${i}`);
+        if(otherInp && otherInp.value === 'ー') {
+          otherInp.value = '';
+          otherInp.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer';
+        }
+      }
+    }
+    calcTotals();
+    return;
+  }
+
+  if(rawText === 'ー') {
+    input.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none cursor-pointer';
+    if(badge) badge.classList.add('hidden');
+    calcTotals();
+    return;
+  }
+
+  const val = parseFloat(rawText);
+  if(!isNaN(val)) {
+    input.className = `w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer ${val > 0 ? 'score-pos' : val < 0 ? 'score-neg' : ''}`;
+    if(val <= tobiLimit && badge) badge.classList.remove('hidden');
+    else if(badge) badge.classList.add('hidden');
+  } else {
+    input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer';
+    if(badge) badge.classList.add('hidden');
+  }
+  calcTotals();
+}
+
+function recheckTobiAll() {
+  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
+  const rows = document.getElementById('score-rows').querySelectorAll('tr');
+  rows.forEach(tr => {
+    const rId = tr.dataset.rId;
+    for(let i=0; i<4; i++) {
+      const input = document.getElementById(`score-${rId}-${i}`);
+      const badge = document.getElementById(`tobi-badge-${rId}-${i}`);
+      if(input && badge && input.value !== '' && input.value !== 'ー') {
+        const val = parseFloat(input.value);
+        if(!isNaN(val) && val <= tobiLimit) badge.classList.remove('hidden');
+        else badge.classList.add('hidden');
+      }
+    }
+  });
+  calcTotals();
+}
+
+function addRow() {
+  rowCount++;
+  const tr = document.createElement('tr');
+  tr.id = `row-${rowCount}`;
+  tr.dataset.rId = rowCount;
+  tr.innerHTML = `
+    <td class="py-2 text-xs font-bold text-gray-500 relative">
+      <button onclick="removeRow(${rowCount})" class="w-5 h-5 bg-red-100 text-red-600 rounded-full text-[10px] font-bold inline-flex items-center justify-center hover:bg-red-200">✕</button>
+    </td>
+    ${[0,1,2,3].map(i => `
+      <td class="p-1 ${i === 3 && tablePlayerCapacity === 3 ? 'hidden' : ''} ${i === 3 ? 'cell-p3' : ''}">
+        <div class="relative">
+          <input type="text" readonly inputmode="none" id="score-${rowCount}-${i}" onclick="onScoreCellClick(${rowCount}, ${i})" class="w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer">
+          <span id="tobi-badge-${rowCount}-${i}" class="hidden absolute top-0.5 right-0.5 bg-yellow-400 text-[9px] px-1 rounded text-gray-800 font-bold">トビ</span>
+        </div>
+      </td>
+    `).join('')}
+    <td class="cell-dummy-extra ${tablePlayerCapacity === 4 ? 'hidden' : ''}"></td>
+  `;
+  document.getElementById('score-rows').appendChild(tr);
+}
+
+function removeRow(rId) {
+  if(confirm(`${rId}半荘目の行を削除しますか？`)) {
+    const rowEl = document.getElementById(`row-${rId}`);
+    if(rowEl) {
+      rowEl.remove();
+      calcTotals();
+    }
+  }
 }
 
 function forceReloadApp() {
@@ -684,7 +944,7 @@ function enable4thPlayer(is4manRule = false) {
       const inp = document.getElementById(`score-${rId}-3`);
       if(inp && inp.value === '' && isRowFilled(rId, 3)) {
         inp.value = 'ー';
-        inp.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none';
+        inp.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none cursor-pointer';
       }
     });
   }
@@ -718,7 +978,7 @@ function remove4thPlayer(skipConfirm = false) {
     const inp = document.getElementById(`score-${rId}-3`);
     if(inp) {
       inp.value = '';
-      inp.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
+      inp.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer';
     }
   });
 
@@ -745,169 +1005,6 @@ function isRowFilled(rId, count) {
     if(val !== '' && val !== 'ー' && !isNaN(parseFloat(val))) filled++;
   }
   return filled === baseMatchRule;
-}
-
-function addRow() {
-  rowCount++;
-  const tr = document.createElement('tr');
-  tr.id = `row-${rowCount}`;
-  tr.dataset.rId = rowCount;
-  tr.innerHTML = `
-    <td class="py-2 text-xs font-bold text-gray-500 relative">
-      <button onclick="removeRow(${rowCount})" class="w-5 h-5 bg-red-100 text-red-600 rounded-full text-[10px] font-bold inline-flex items-center justify-center hover:bg-red-200">✕</button>
-    </td>
-    ${[0,1,2,3].map(i => `
-      <td class="p-1 ${i === 3 && tablePlayerCapacity === 3 ? 'hidden' : ''} ${i === 3 ? 'cell-p3' : ''}">
-        <div class="relative">
-          <input type="text" inputmode="decimal" id="score-${rowCount}-${i}" onfocus="onScoreFocus(${rowCount}, ${i})" oninput="onScoreInput(${rowCount}, ${i})" class="w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
-          <span id="tobi-badge-${rowCount}-${i}" class="hidden absolute top-0.5 right-0.5 bg-yellow-400 text-[9px] px-1 rounded text-gray-800 font-bold">トビ</span>
-        </div>
-      </td>
-    `).join('')}
-    <td class="cell-dummy-extra ${tablePlayerCapacity === 4 ? 'hidden' : ''}"></td>
-  `;
-  document.getElementById('score-rows').appendChild(tr);
-}
-
-function removeRow(rId) {
-  if(confirm(`${rId}半荘目の行を削除しますか？`)) {
-    const rowEl = document.getElementById(`row-${rId}`);
-    if(rowEl) {
-      rowEl.remove();
-      calcTotals();
-    }
-  }
-}
-
-function onScoreFocus(rId, pIdx) {
-  const currentInp = document.getElementById(`score-${rId}-${pIdx}`);
-  if(!currentInp) return;
-  setCurrentActiveInput(currentInp);
-
-  if(currentInp.value === 'ー') {
-    currentInp.value = '';
-    currentInp.classList.remove('text-gray-400', 'font-normal');
-  }
-
-  let filledValues = [];
-  let emptyIndices = [];
-
-  for(let i=0; i<tablePlayerCapacity; i++) {
-    const inp = document.getElementById(`score-${rId}-${i}`);
-    if(inp) {
-      const val = inp.value.trim();
-      if(val !== '' && val !== 'ー' && !isNaN(parseFloat(val))) {
-        if(i !== pIdx) filledValues.push({ idx: i, val: parseFloat(val) });
-      } else {
-        emptyIndices.push(i);
-      }
-    }
-  }
-
-  if(filledValues.length === baseMatchRule - 1) {
-    const sum = filledValues.reduce((a,b)=>a+b.val, 0);
-    const complement = Math.round((-sum) * 10) / 10;
-    
-    currentInp.value = complement;
-    onScoreInput(rId, pIdx);
-
-    if(baseMatchRule === 3 && tablePlayerCapacity === 4) {
-      for(let i=0; i<4; i++) {
-        if(i !== pIdx && !filledValues.some(f => f.idx === i)) {
-          const restInp = document.getElementById(`score-${rId}-${i}`);
-          if(restInp && (restInp.value === '' || restInp.value === 'ー')) {
-            restInp.value = 'ー';
-            restInp.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none';
-          }
-        }
-      }
-    }
-  }
-}
-
-function onScoreInput(rId, pIdx) {
-  const input = document.getElementById(`score-${rId}-${pIdx}`);
-  if(!input) return;
-  const rawText = input.value.trim();
-  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
-  const badge = document.getElementById(`tobi-badge-${rId}-${pIdx}`);
-
-  if(rawText === '') {
-    input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
-    if(badge) badge.classList.add('hidden');
-
-    if(baseMatchRule === 3 && tablePlayerCapacity === 4) {
-      for(let i=0; i<4; i++) {
-        const otherInp = document.getElementById(`score-${rId}-${i}`);
-        if(otherInp && otherInp.value === 'ー') {
-          otherInp.value = '';
-          otherInp.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
-        }
-      }
-    }
-    calcTotals();
-    return;
-  }
-
-  if(rawText === 'ー') {
-    input.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none';
-    if(badge) badge.classList.add('hidden');
-    calcTotals();
-    return;
-  }
-
-  const val = parseFloat(rawText);
-  if(!isNaN(val)) {
-    input.className = `w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E] ${val > 0 ? 'score-pos' : val < 0 ? 'score-neg' : ''}`;
-    if(val <= tobiLimit && badge) badge.classList.remove('hidden');
-    else if(badge) badge.classList.add('hidden');
-  } else {
-    input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
-    if(badge) badge.classList.add('hidden');
-  }
-  calcTotals();
-}
-
-function recheckTobiAll() {
-  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
-  const rows = document.getElementById('score-rows').querySelectorAll('tr');
-  rows.forEach(tr => {
-    const rId = tr.dataset.rId;
-    for(let i=0; i<4; i++) {
-      const input = document.getElementById(`score-${rId}-${i}`);
-      const badge = document.getElementById(`tobi-badge-${rId}-${i}`);
-      if(input && badge && input.value !== '' && input.value !== 'ー') {
-        const val = parseFloat(input.value);
-        if(!isNaN(val) && val <= tobiLimit) badge.classList.remove('hidden');
-        else badge.classList.add('hidden');
-      }
-    }
-  });
-  calcTotals();
-}
-
-function autoCompleteChip(pIdx) {
-  let filled = 0;
-  let currentSum = 0;
-  for(let i=0; i<tablePlayerCapacity; i++) {
-    if(i !== pIdx) {
-      const inputEl = document.getElementById(`chip-${i}`);
-      if(inputEl && inputEl.value !== '') {
-        const val = parseInt(inputEl.value);
-        if(!isNaN(val)) {
-          filled++;
-          currentSum += val;
-        }
-      }
-    }
-  }
-  if(filled === tablePlayerCapacity - 1) {
-    const selfInput = document.getElementById(`chip-${pIdx}`);
-    if(selfInput) {
-      selfInput.value = -currentSum;
-      calcTotals();
-    }
-  }
 }
 
 function calcTotals() {
@@ -1106,6 +1203,7 @@ function initNewMatchSheet() {
   for(let i=1; i<4; i++) document.getElementById(`pname-${i}`).value = '';
   for(let i=0; i<4; i++) document.getElementById(`chip-${i}`).value = '';
   document.getElementById('cfg-gamefee').value = '';
+  kpDone();
   calcTotals();
 }
 
@@ -1337,6 +1435,7 @@ function editMatch(id) {
     document.getElementById(`chip-${i}`).value = (c !== undefined && c !== 0) ? c : '';
   });
 
+  kpDone();
   calcTotals();
   showTab('input');
 }
@@ -1706,6 +1805,7 @@ function closeRivalModal() {
 }
 
 function showTab(tabName) {
+  kpDone();
   ['home', 'input', 'history'].forEach(t => {
     document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
     const tabBtn = document.getElementById(`tab-${t}`);
