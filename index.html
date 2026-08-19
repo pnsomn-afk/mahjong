@@ -7,6 +7,11 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>ちょん簿</title>
+
+<!-- iPhoneホーム画面アプリアイコン設定 -->
+<link rel="apple-touch-icon" href="無題131_20260819203348.png">
+<link rel="icon" type="image/png" href="無題131_20260819203348.png">
+
 <!-- ポップな丸ゴシックフォント -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,10 +56,10 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
-<!-- ヘッダー -->
+<!-- ヘッダー（アイコン画像反映） -->
 <header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
-    <div class="bg-[#4A5D4E] text-white text-xs px-2 py-0.5 rounded-lg font-black app-logo-font shadow-sm">牌</div>
+    <img src="無題131_20260819203348.png" alt="ちょん簿" class="w-7 h-7 rounded-lg shadow-sm border border-[#D1D8CD] bg-white object-contain p-0.5">
     <span class="app-logo-font font-black text-xl text-[#2D3748] tracking-wide drop-shadow-sm">ちょん簿</span>
     <span id="header-subtitle" class="text-xs text-gray-500 font-bold ml-1 self-end pb-0.5">（ホーム）</span>
   </div>
@@ -138,9 +143,8 @@
         </div>
       </div>
 
-      <!-- メイン収支 ＆ サブ3項目（場代込・総スコア・総チップ） -->
+      <!-- メイン収支 ＆ サブ3項目 -->
       <div class="space-y-1.5">
-        <!-- メイン：総収支(場代なし) -->
         <div class="bg-white p-3 rounded-lg border border-[#D1D8CD] flex justify-between items-center shadow-xs">
           <div>
             <span class="text-gray-800 font-black text-sm">総収支 (場代なし)</span>
@@ -149,7 +153,6 @@
           <span id="st-rawfee" class="font-black text-lg">0</span>
         </div>
 
-        <!-- サブ3項目グリッド -->
         <div class="grid grid-cols-3 gap-1.5 text-xs">
           <div class="bg-white p-2 rounded-lg border border-[#D1D8CD] text-center">
             <div class="text-[9px] text-gray-500 mb-0.5 truncate">場代込収支</div>
@@ -370,13 +373,11 @@
             CSVデータを登録する
           </button>
           
-          <!-- CSV形式ガイド確認ボタン -->
           <button onclick="toggleCsvFormatGuide()" class="w-full py-1.5 bg-gray-100 border border-gray-300 text-gray-700 rounded font-bold text-[11px] hover:bg-gray-200 flex items-center justify-center gap-1">
             <span>📋</span><span>取り込み用CSVの形式を確認する</span><span id="csv-guide-arrow">▼</span>
           </button>
         </div>
 
-        <!-- CSV形式ガイド（アコーディオン） -->
         <div id="csv-format-guide" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-[10px] space-y-2 text-gray-600 font-mono">
           <div class="font-bold text-gray-800 border-b pb-1">【CSV列順序（全27列）】</div>
           <div class="leading-relaxed">
@@ -1294,7 +1295,6 @@ function setPeriodFilter(period) {
   renderHome();
 }
 
-// ホーム戦績・総スコアを含めた集計
 function renderHome() {
   let history = JSON.parse(localStorage.getItem('mahjong_history') || '[]');
   const myName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -1324,7 +1324,6 @@ function renderHome() {
     const myRaw = (m.rawSyushi && m.rawSyushi[0] !== undefined) ? m.rawSyushi[0] : myFin;
     const myChip = (m.chips && m.chips[0] !== undefined) ? m.chips[0] : 0;
     
-    // 自分の素点計
     let myScore = 0;
     if(m.totalPtsHistory && m.totalPtsHistory[0] !== undefined) {
       myScore = m.totalPtsHistory[0];
@@ -1369,28 +1368,23 @@ function renderHome() {
   const avg = totalRanks ? ((posCounts[0]*1 + posCounts[1]*2 + posCounts[2]*3 + posCounts[3]*4) / totalRanks).toFixed(2) : '0.00';
   document.getElementById('st-avgpos').innerText = avg;
   
-  // メイン：総収支 (場代なし)
   const rawEl = document.getElementById('st-rawfee');
   rawEl.innerText = (rawFee > 0 ? '+' : '') + rawFee.toLocaleString();
   rawEl.className = `font-black text-lg ${rawFee > 0 ? 'score-pos' : rawFee < 0 ? 'score-neg' : ''}`;
 
-  // サブ1：場代込収支
   const feeEl = document.getElementById('st-totalfee');
   feeEl.innerText = (totalFee > 0 ? '+' : '') + totalFee.toLocaleString();
   feeEl.className = `font-bold text-xs ${totalFee > 0 ? 'score-pos' : totalFee < 0 ? 'score-neg' : ''}`;
 
-  // サブ2：総スコア（素点計）
   const totalScoreRounded = Math.round(totalScore * 10) / 10;
   const scoreEl = document.getElementById('st-totalscore');
   scoreEl.innerText = (totalScoreRounded > 0 ? '+' : '') + totalScoreRounded.toFixed(1);
   scoreEl.className = `font-bold text-xs ${totalScoreRounded > 0 ? 'score-pos' : totalScoreRounded < 0 ? 'score-neg' : ''}`;
 
-  // サブ3：総チップ
   const chipEl = document.getElementById('st-totalchip');
   chipEl.innerText = `${totalChips > 0 ? '+' : ''}${totalChips} 枚`;
   chipEl.className = `font-bold text-xs ${totalChips > 0 ? 'score-pos' : totalChips < 0 ? 'score-neg' : ''}`;
 
-  // 複合グラフ描画
   let graphLabels = [];
   let periodBarData = [];
   let cumulativeLineData = [];
