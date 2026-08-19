@@ -56,7 +56,7 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden select-none">
 
-<!-- ヘッダー（画像差し替え済み） -->
+<!-- ヘッダー -->
 <header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
   <div class="flex items-center space-x-2">
     <img src="無題131_20260819212255.png" alt="ちょん簿" class="w-7 h-7 rounded-lg shadow-sm border border-[#D1D8CD] bg-white object-contain p-0.5">
@@ -259,10 +259,11 @@
               <div class="flex items-center justify-center gap-0.5">
                 <input id="pname-3" placeholder="対戦者3" onchange="calcTotals()" class="bg-white/80 border border-[#D1D8CD] rounded px-1 text-center w-full font-bold">
                 <button onclick="openNameSelector(3)" class="text-xs text-gray-400 hover:text-gray-700 px-0.5">👥</button>
+                <button onclick="remove4thPlayer()" class="text-xs text-red-500 hover:text-red-700 px-0.5 font-bold" title="4人目を削除して3人打ちに戻す">✕</button>
               </div>
             </th>
             <th id="th-add-player" class="py-2 w-8 text-center">
-              <button onclick="enable4thPlayer()" class="bg-[#EAEFE8] border border-[#8C9A8E] text-[#4A5D4E] rounded px-1.5 py-1 text-[11px] font-black hover:bg-gray-200" title="4人目を追加して4人回しにする">＋</button>
+              <button onclick="promptEnable4thPlayer()" class="bg-[#EAEFE8] border border-[#8C9A8E] text-[#4A5D4E] rounded px-1.5 py-1 text-[11px] font-black hover:bg-gray-200" title="4人目を追加して4人回しにする">＋</button>
             </th>
           </tr>
         </thead>
@@ -592,8 +593,17 @@ function setBaseRule(rule) {
   
   if(rule === 4) {
     enable4thPlayer(true);
+  } else if(tablePlayerCapacity === 4) {
+    remove4thPlayer(true);
   }
   calcTotals();
+}
+
+// 4人目追加時の確認ダイアログ
+function promptEnable4thPlayer() {
+  if(confirm('4人目を追加して4人回し（抜け番制）にしますか？')) {
+    enable4thPlayer(false);
+  }
 }
 
 function enable4thPlayer(is4manRule = false) {
@@ -618,10 +628,58 @@ function enable4thPlayer(is4manRule = false) {
       const inp = document.getElementById(`score-${rId}-3`);
       if(inp && inp.value === '' && isRowFilled(rId, 3)) {
         inp.value = 'ー';
-        inp.classList.add('text-gray-400', 'font-normal');
+        inp.className = 'w-full h-9 bg-gray-100 border border-[#D1D8CD] rounded-lg text-center font-normal text-sm text-gray-400 outline-none';
       }
     });
   }
+  calcTotals();
+}
+
+// 4人目を削除して3人打ちに戻す機能
+function remove4thPlayer(skipConfirm = false) {
+  if(baseMatchRule === 4) return; // 4人麻雀時は削除不可
+
+  const p4Name = document.getElementById('pname-3').value.trim();
+  let hasScores = false;
+  const rows = document.getElementById('score-rows').querySelectorAll('tr');
+  rows.forEach(tr => {
+    const rId = tr.dataset.rId;
+    const val = document.getElementById(`score-${rId}-3`)?.value.trim();
+    if(val !== '' && val !== 'ー') hasScores = true;
+  });
+
+  if(!skipConfirm && (p4Name !== '' || hasScores)) {
+    if(!confirm('4人目のデータを削除して3人打ちに戻しますか？')) {
+      return;
+    }
+  }
+
+  tablePlayerCapacity = 3;
+  document.getElementById('pname-3').value = '';
+  document.getElementById('chip-3').value = '';
+
+  rows.forEach(tr => {
+    const rId = tr.dataset.rId;
+    const inp = document.getElementById(`score-${rId}-3`);
+    if(inp) {
+      inp.value = '';
+      inp.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]';
+    }
+  });
+
+  document.getElementById('th-p3').classList.add('hidden');
+  document.getElementById('total-pts-3').classList.add('hidden');
+  document.getElementById('td-chip-3').classList.add('hidden');
+  document.getElementById('syushi-3').classList.add('hidden');
+  document.getElementById('final-3').classList.add('hidden');
+  document.getElementById('th-add-player').classList.remove('hidden');
+
+  const extraCells = document.querySelectorAll('.cell-dummy-extra');
+  extraCells.forEach(el => el.classList.remove('hidden'));
+
+  const cells = document.querySelectorAll('.cell-p3');
+  cells.forEach(el => el.classList.add('hidden'));
+
   calcTotals();
 }
 
