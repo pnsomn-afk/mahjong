@@ -206,11 +206,11 @@
       <div id="config-body" class="grid grid-cols-2 gap-2 mt-3 text-xs">
         <div>
           <label class="block text-gray-600 mb-1">レート (P/千点)</label>
-          <input type="number" id="cfg-rate" value="100" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="numeric" id="cfg-rate" value="100" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">チップ (P/枚)</label>
-          <input type="number" id="cfg-chip" value="300" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="numeric" id="cfg-chip" value="300" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">日付</label>
@@ -218,11 +218,11 @@
         </div>
         <div>
           <label class="block text-gray-600 mb-1">ゲーム代(総額)</label>
-          <input type="number" id="cfg-gamefee" placeholder="0" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="numeric" id="cfg-gamefee" placeholder="0" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">トビ基準 (以下でトビ)</label>
-          <input type="number" id="cfg-tobi" value="-65" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="decimal" id="cfg-tobi" value="-65" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">基本対局人数 (卓人数)</label>
@@ -234,7 +234,7 @@
       </div>
     </div>
 
-    <!-- スコア入力シート -->
+    <!-- スコア入力シート（inputmode="decimal" 設定） -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
         <thead>
@@ -279,10 +279,10 @@
           </tr>
           <tr>
             <td class="py-2 text-gray-500">チップ</td>
-            <td class="p-1"><input type="number" id="chip-0" onfocus="autoCompleteChip(0)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="number" id="chip-1" onfocus="autoCompleteChip(1)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="number" id="chip-2" onfocus="autoCompleteChip(2)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td id="td-chip-3" class="p-1 hidden"><input type="number" id="chip-3" onfocus="autoCompleteChip(3)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" inputmode="decimal" id="chip-0" onfocus="autoCompleteChip(0)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" inputmode="decimal" id="chip-1" onfocus="autoCompleteChip(1)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" inputmode="decimal" id="chip-2" onfocus="autoCompleteChip(2)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td id="td-chip-3" class="p-1 hidden"><input type="text" inputmode="decimal" id="chip-3" onfocus="autoCompleteChip(3)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
             <td class="cell-dummy-extra"></td>
           </tr>
           <tr class="bg-[#EAEFE8] border-t border-[#D1D8CD]">
@@ -599,7 +599,6 @@ function setBaseRule(rule) {
   calcTotals();
 }
 
-// 4人目追加時の確認ダイアログ
 function promptEnable4thPlayer() {
   if(confirm('4人目を追加して4人回し（抜け番制）にしますか？')) {
     enable4thPlayer(false);
@@ -635,9 +634,8 @@ function enable4thPlayer(is4manRule = false) {
   calcTotals();
 }
 
-// 4人目を削除して3人打ちに戻す機能
 function remove4thPlayer(skipConfirm = false) {
-  if(baseMatchRule === 4) return; // 4人麻雀時は削除不可
+  if(baseMatchRule === 4) return;
 
   const p4Name = document.getElementById('pname-3').value.trim();
   let hasScores = false;
@@ -675,7 +673,7 @@ function remove4thPlayer(skipConfirm = false) {
   document.getElementById('th-add-player').classList.remove('hidden');
 
   const extraCells = document.querySelectorAll('.cell-dummy-extra');
-  extraCells.forEach(el => el.classList.remove('hidden'));
+  extraCells.forEach(el => el.classList.add('hidden'));
 
   const cells = document.querySelectorAll('.cell-p3');
   cells.forEach(el => el.classList.add('hidden'));
@@ -704,7 +702,7 @@ function addRow() {
     ${[0,1,2,3].map(i => `
       <td class="p-1 ${i === 3 && tablePlayerCapacity === 3 ? 'hidden' : ''} ${i === 3 ? 'cell-p3' : ''}">
         <div class="relative">
-          <input type="text" id="score-${rowCount}-${i}" onfocus="onScoreFocus(${rowCount}, ${i})" oninput="onScoreInput(${rowCount}, ${i})" class="w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="decimal" id="score-${rowCount}-${i}" onfocus="onScoreFocus(${rowCount}, ${i})" oninput="onScoreInput(${rowCount}, ${i})" class="w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
           <span id="tobi-badge-${rowCount}-${i}" class="hidden absolute top-0.5 right-0.5 bg-yellow-400 text-[9px] px-1 rounded text-gray-800 font-bold">トビ</span>
         </div>
       </td>
