@@ -206,11 +206,11 @@
       <div id="config-body" class="grid grid-cols-2 gap-2 mt-3 text-xs">
         <div>
           <label class="block text-gray-600 mb-1">レート (P/千点)</label>
-          <input type="text" inputmode="numeric" id="cfg-rate" value="100" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="numeric" id="cfg-rate" value="100" onfocus="setCurrentActiveInput(this)" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">チップ (P/枚)</label>
-          <input type="text" inputmode="numeric" id="cfg-chip" value="300" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="numeric" id="cfg-chip" value="300" onfocus="setCurrentActiveInput(this)" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">日付</label>
@@ -218,11 +218,11 @@
         </div>
         <div>
           <label class="block text-gray-600 mb-1">ゲーム代(総額)</label>
-          <input type="text" inputmode="numeric" id="cfg-gamefee" placeholder="0" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="numeric" id="cfg-gamefee" placeholder="0" onfocus="setCurrentActiveInput(this)" oninput="calcTotals()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">トビ基準 (以下でトビ)</label>
-          <input type="text" inputmode="decimal" id="cfg-tobi" value="-65" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
+          <input type="text" inputmode="decimal" id="cfg-tobi" value="-65" onfocus="setCurrentActiveInput(this)" oninput="recheckTobiAll()" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">基本対局人数 (卓人数)</label>
@@ -234,7 +234,7 @@
       </div>
     </div>
 
-    <!-- スコア入力シート（inputmode="decimal" 設定） -->
+    <!-- スコア入力シート -->
     <div class="card p-3 shadow-sm overflow-x-auto">
       <table class="w-full text-center border-collapse">
         <thead>
@@ -279,10 +279,10 @@
           </tr>
           <tr>
             <td class="py-2 text-gray-500">チップ</td>
-            <td class="p-1"><input type="text" inputmode="decimal" id="chip-0" onfocus="autoCompleteChip(0)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="text" inputmode="decimal" id="chip-1" onfocus="autoCompleteChip(1)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td class="p-1"><input type="text" inputmode="decimal" id="chip-2" onfocus="autoCompleteChip(2)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
-            <td id="td-chip-3" class="p-1 hidden"><input type="text" inputmode="decimal" id="chip-3" onfocus="autoCompleteChip(3)" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" inputmode="decimal" id="chip-0" onfocus="autoCompleteChip(0); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" inputmode="decimal" id="chip-1" onfocus="autoCompleteChip(1); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td class="p-1"><input type="text" inputmode="decimal" id="chip-2" onfocus="autoCompleteChip(2); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
+            <td id="td-chip-3" class="p-1 hidden"><input type="text" inputmode="decimal" id="chip-3" onfocus="autoCompleteChip(3); setCurrentActiveInput(this);" oninput="calcTotals()" placeholder="0" class="w-full h-8 bg-white border border-[#D1D8CD] rounded p-1 text-center font-bold"></td>
             <td class="cell-dummy-extra"></td>
           </tr>
           <tr class="bg-[#EAEFE8] border-t border-[#D1D8CD]">
@@ -323,6 +323,22 @@
   </div>
 
 </main>
+
+<!-- キーボード入力補助バー（＋/ー切替ボタン付き） -->
+<div id="keyboard-accessory-bar" class="hidden fixed bottom-14 left-0 right-0 bg-[#E2E6DE] border-t border-[#D1D8CD] p-1.5 flex items-center justify-between z-40 shadow-md">
+  <div class="flex items-center gap-2">
+    <button onmousedown="event.preventDefault(); togglePlusMinus();" class="bg-[#4A5D4E] active:bg-[#3B4D3F] text-white px-3 py-1.5 rounded-lg text-sm font-black shadow-sm flex items-center gap-1">
+      <span>＋ / −</span>
+      <span class="text-[10px] font-normal opacity-80">(符号反転)</span>
+    </button>
+    <button onmousedown="event.preventDefault(); insertHyphenForActive();" class="bg-white active:bg-gray-200 border border-[#D1D8CD] text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+      ー (抜け番)
+    </button>
+  </div>
+  <button onmousedown="event.preventDefault(); closeKeyboard();" class="bg-gray-200 active:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+    完了 ✕
+  </button>
+</div>
 
 <!-- 設定モーダル -->
 <div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
@@ -454,6 +470,7 @@ let chartInstance = null;
 let currentSelectingPIdx = null;
 let currentPeriod = 'all';
 let currentRule = 3;
+let currentActiveInput = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
@@ -465,7 +482,47 @@ document.addEventListener('DOMContentLoaded', () => {
   initPeriodSelectors();
   renderHistory();
   renderHome();
+
+  document.addEventListener('focusout', (e) => {
+    setTimeout(() => {
+      if(!document.activeElement || document.activeElement.tagName !== 'INPUT') {
+        document.getElementById('keyboard-accessory-bar').classList.add('hidden');
+      }
+    }, 150);
+  });
 });
+
+function setCurrentActiveInput(inputEl) {
+  currentActiveInput = inputEl;
+  document.getElementById('keyboard-accessory-bar').classList.remove('hidden');
+}
+
+// ＋/ー 符号反転機能
+function togglePlusMinus() {
+  if(!currentActiveInput) return;
+  let val = currentActiveInput.value.trim();
+  if(val === '' || val === 'ー') {
+    currentActiveInput.value = '-';
+  } else if(val === '-') {
+    currentActiveInput.value = '';
+  } else if(val.startsWith('-')) {
+    currentActiveInput.value = val.substring(1);
+  } else {
+    currentActiveInput.value = '-' + val;
+  }
+  currentActiveInput.dispatchEvent(new Event('input'));
+}
+
+function insertHyphenForActive() {
+  if(!currentActiveInput) return;
+  currentActiveInput.value = 'ー';
+  currentActiveInput.dispatchEvent(new Event('input'));
+}
+
+function closeKeyboard() {
+  if(currentActiveInput) currentActiveInput.blur();
+  document.getElementById('keyboard-accessory-bar').classList.add('hidden');
+}
 
 function forceReloadApp() {
   const cleanUrl = window.location.href.split('?')[0];
@@ -673,7 +730,7 @@ function remove4thPlayer(skipConfirm = false) {
   document.getElementById('th-add-player').classList.remove('hidden');
 
   const extraCells = document.querySelectorAll('.cell-dummy-extra');
-  extraCells.forEach(el => el.classList.add('hidden'));
+  extraCells.forEach(el => el.classList.remove('hidden'));
 
   const cells = document.querySelectorAll('.cell-p3');
   cells.forEach(el => el.classList.add('hidden'));
@@ -725,6 +782,7 @@ function removeRow(rId) {
 function onScoreFocus(rId, pIdx) {
   const currentInp = document.getElementById(`score-${rId}-${pIdx}`);
   if(!currentInp) return;
+  setCurrentActiveInput(currentInp);
 
   if(currentInp.value === 'ー') {
     currentInp.value = '';
