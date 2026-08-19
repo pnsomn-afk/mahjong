@@ -19,6 +19,12 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
   body { 
     background-color: #E2E6DE; 
     color: #2D3748; 
@@ -42,6 +48,18 @@
   .score-pos { color: #1E40AF; }
   .score-neg { color: #DC2626; }
   
+  /* 日付枠の高さ・余白を完全統一 */
+  input[type="date"], input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    padding: 0 4px !important;
+    line-height: 38px !important;
+    box-sizing: border-box !important;
+  }
+
   /* カスタムキーボード用スタイル */
   .cell-active {
     outline: 2.5px solid #4A5D4E !important;
@@ -72,10 +90,10 @@
   }
 </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden select-none">
+<body class="flex flex-col h-full select-none">
 
-<!-- ヘッダー -->
-<header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0">
+<!-- ヘッダー（上部固定） -->
+<header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0 z-30">
   <div class="flex items-center space-x-2">
     <img src="無題131_20260819212255.png" alt="ちょん簿" class="w-7 h-7 rounded-lg shadow-sm border border-[#D1D8CD] bg-white object-contain p-0.5">
     <span class="app-logo-font font-black text-xl text-[#2D3748] tracking-wide drop-shadow-sm">ちょん簿</span>
@@ -91,8 +109,8 @@
   </div>
 </header>
 
-<!-- メイン表示領域 -->
-<main id="main-content" class="flex-1 overflow-y-auto p-3 pb-36">
+<!-- メイン表示領域（内部スクロール） -->
+<main id="main-content" class="flex-1 overflow-y-auto p-3 pb-80">
   
   <!-- 【1. ホーム画面】 -->
   <div id="view-home" class="space-y-3">
@@ -110,7 +128,7 @@
       </div>
       <div id="period-selector-container" class="hidden">
         <select id="select-year" onchange="renderHome()" class="hidden bg-white border border-[#D1D8CD] rounded px-2 py-1 font-bold text-xs outline-none"></select>
-        <input type="month" id="select-month" onchange="renderHome()" class="hidden bg-white border border-[#D1D8CD] rounded px-1 py-0.5 font-bold text-xs outline-none min-h-[30px]">
+        <input type="month" id="select-month" onchange="renderHome()" class="hidden bg-white border border-[#D1D8CD] rounded px-1 py-0.5 font-bold text-xs outline-none">
       </div>
     </div>
 
@@ -232,7 +250,7 @@
         </div>
         <div>
           <label class="block text-gray-600 mb-1">日付</label>
-          <input type="date" id="cfg-date" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg px-2 text-center font-medium text-xs outline-none focus:border-[#4A5D4E]">
+          <input type="date" id="cfg-date" class="w-full h-[38px] bg-white border border-[#D1D8CD] rounded-lg text-center font-medium text-xs outline-none focus:border-[#4A5D4E]">
         </div>
         <div>
           <label class="block text-gray-600 mb-1">ゲーム代(総額)</label>
@@ -327,10 +345,16 @@
       </button>
     </div>
 
-    <div class="pt-2">
+    <!-- 登録ボタン ＆ キャンセルボタン -->
+    <div class="pt-2 space-y-2">
       <button onclick="saveMatch()" id="btn-save-match" class="w-full py-3.5 rounded-xl btn-main text-base font-bold shadow-md active:opacity-90 flex items-center justify-center gap-2">
         <span>対局結果を登録する</span>
       </button>
+      <div class="text-center">
+        <button onclick="cancelMatchInput()" class="text-xs text-gray-500 hover:text-red-500 py-1.5 px-3 underline font-medium active:opacity-70">
+          対局入力を破棄して戻る
+        </button>
+      </div>
     </div>
   </div>
 
@@ -500,7 +524,7 @@ let currentRule = 3;
 
 // カスタムキーボード管理
 let activeInputEl = null;
-let activeInputType = null; // 'score', 'chip', 'config'
+let activeInputType = null;
 let activeRowId = null;
 let activePIdx = null;
 
@@ -516,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHome();
 });
 
-// カスタムキーボード制御
+// カスタムキーボード制御（画面上ズレ防止・内部完結）
 function openKeypad(el, type, rId = null, pIdx = null) {
   if(activeInputEl) activeInputEl.classList.remove('cell-active');
   
@@ -527,11 +551,6 @@ function openKeypad(el, type, rId = null, pIdx = null) {
 
   activeInputEl.classList.add('cell-active');
   document.getElementById('custom-keypad-container').classList.remove('hidden');
-
-  // スクロール調整（キーボードで隠れないように）
-  setTimeout(() => {
-    activeInputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 100);
 }
 
 function kpPress(char) {
@@ -539,7 +558,6 @@ function kpPress(char) {
   let val = activeInputEl.value;
   if(val === 'ー') val = '';
   
-  // 小数点の重複防止
   if(char === '.' && val.includes('.')) return;
 
   activeInputEl.value = val + char;
@@ -617,7 +635,6 @@ function triggerActiveInputUpdate() {
   }
 }
 
-// スコアセルをタップした時の処理（自動補完＆キーボード起動）
 function onScoreCellClick(rId, pIdx) {
   const currentInp = document.getElementById(`score-${rId}-${pIdx}`);
   if(!currentInp) return;
@@ -627,7 +644,6 @@ function onScoreCellClick(rId, pIdx) {
     currentInp.classList.remove('text-gray-400', 'font-normal');
   }
 
-  // 既に数値が入っている人はカウント
   let filledValues = [];
   for(let i=0; i<tablePlayerCapacity; i++) {
     const inp = document.getElementById(`score-${rId}-${i}`);
@@ -639,7 +655,6 @@ function onScoreCellClick(rId, pIdx) {
     }
   }
 
-  // 「卓ルール-1人」が入力済みで、このマスをタップした場合 ➔ 自動補完＆残り1人を「ー」に確定
   if(filledValues.length === baseMatchRule - 1 && currentInp.value === '') {
     const sum = filledValues.reduce((a,b)=>a+b.val, 0);
     const complement = Math.round((-sum) * 10) / 10;
@@ -667,7 +682,6 @@ function onChipCellClick(pIdx) {
   const selfInput = document.getElementById(`chip-${pIdx}`);
   if(!selfInput) return;
 
-  // チップの自動計算
   let filled = 0;
   let currentSum = 0;
   for(let i=0; i<tablePlayerCapacity; i++) {
@@ -701,7 +715,6 @@ function onScoreInput(rId, pIdx) {
     input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer';
     if(badge) badge.classList.add('hidden');
 
-    // 消去時、連動していた「ー」も自動解除
     if(baseMatchRule === 3 && tablePlayerCapacity === 4) {
       for(let i=0; i<4; i++) {
         const otherInp = document.getElementById(`score-${rId}-${i}`);
@@ -781,6 +794,14 @@ function removeRow(rId) {
       rowEl.remove();
       calcTotals();
     }
+  }
+}
+
+// 対局入力キャンセル（確認分岐付き）
+function cancelMatchInput() {
+  if(confirm('対局入力を破棄してホームに戻りますか？\n（入力中のスコアは破棄されます）')) {
+    initNewMatchSheet();
+    showTab('home');
   }
 }
 
