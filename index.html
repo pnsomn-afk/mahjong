@@ -48,7 +48,7 @@
   .score-pos { color: #1E40AF; }
   .score-neg { color: #DC2626; }
   
-  /* 日付枠の高さ・余白を完全統一 */
+  /* 日付枠の高さ統一 */
   input[type="date"], input[type="month"] {
     -webkit-appearance: none;
     appearance: none;
@@ -92,7 +92,7 @@
 </head>
 <body class="flex flex-col h-full select-none">
 
-<!-- ヘッダー（上部固定） -->
+<!-- ヘッダー（更新ボタンを削除し設定ボタンのみに集約） -->
 <header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0 z-30">
   <div class="flex items-center space-x-2">
     <img src="無題131_20260819212255.png" alt="ちょん簿" class="w-7 h-7 rounded-lg shadow-sm border border-[#D1D8CD] bg-white object-contain p-0.5">
@@ -100,16 +100,13 @@
     <span id="header-subtitle" class="text-xs text-gray-500 font-bold ml-1 self-end pb-0.5">（ホーム）</span>
   </div>
   <div class="flex items-center space-x-2">
-    <button onclick="forceReloadApp()" class="flex items-center gap-1 bg-white/70 border border-[#D1D8CD] text-gray-700 px-2 py-1.5 rounded-lg text-xs font-bold shadow-sm active:bg-gray-200" title="最新版に更新">
-      <span>🔄</span><span>更新</span>
-    </button>
-    <button onclick="openSettingsModal()" class="flex items-center gap-1 bg-white/70 border border-[#D1D8CD] text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-sm active:bg-gray-200">
+    <button onclick="openSettingsModal()" class="flex items-center gap-1 bg-white/70 border border-[#D1D8CD] text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm active:bg-gray-200">
       <span>⚙️</span><span>設定</span>
     </button>
   </div>
 </header>
 
-<!-- メイン表示領域（内部スクロール） -->
+<!-- メイン表示領域 -->
 <main id="main-content" class="flex-1 overflow-y-auto p-3 pb-80">
   
   <!-- 【1. ホーム画面】 -->
@@ -391,7 +388,7 @@
   </div>
 </div>
 
-<!-- 設定モーダル -->
+<!-- 設定モーダル（更新ボタンを安全に移設） -->
 <div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-4 shadow-xl max-h-[90vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -400,7 +397,16 @@
     </div>
 
     <div class="space-y-4 overflow-y-auto flex-1 text-xs">
-      <div class="space-y-1">
+      <!-- アプリ最新版更新ボタン（移設） -->
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-1.5">
+        <label class="font-bold text-gray-700 block">🔄 アプリの最新化</label>
+        <p class="text-[10px] text-gray-500">GitHubで更新したプログラムを今すぐアプリに反映します。</p>
+        <button onclick="forceReloadApp()" class="w-full py-2 bg-white border border-[#D1D8CD] rounded font-bold text-xs text-gray-700 shadow-sm active:bg-gray-100 flex items-center justify-center gap-1">
+          <span>🔄</span><span>アプリを最新版に更新する</span>
+        </button>
+      </div>
+
+      <div class="space-y-1 border-t pt-3">
         <label class="font-bold text-gray-700">自分の名前（固定）</label>
         <div class="flex gap-2">
           <input type="text" id="settings-myname-input" class="flex-1 bg-gray-50 border border-gray-300 rounded px-2 py-1.5 font-bold outline-none">
@@ -540,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHome();
 });
 
-// カスタムキーボード制御（画面上ズレ防止・内部完結）
+// カスタムキーボード制御
 function openKeypad(el, type, rId = null, pIdx = null) {
   if(activeInputEl) activeInputEl.classList.remove('cell-active');
   
@@ -797,7 +803,6 @@ function removeRow(rId) {
   }
 }
 
-// 対局入力キャンセル（確認分岐付き）
 function cancelMatchInput() {
   if(confirm('対局入力を破棄してホームに戻りますか？\n（入力中のスコアは破棄されます）')) {
     initNewMatchSheet();
