@@ -92,7 +92,7 @@
 </head>
 <body class="flex flex-col h-full select-none">
 
-<!-- ヘッダー（更新ボタンを削除し設定ボタンのみに集約） -->
+<!-- ヘッダー -->
 <header class="bg-[#E2E6DE] px-4 pb-3 border-b border-[#D1D8CD] flex items-center justify-between shrink-0 z-30">
   <div class="flex items-center space-x-2">
     <img src="無題131_20260819212255.png" alt="ちょん簿" class="w-7 h-7 rounded-lg shadow-sm border border-[#D1D8CD] bg-white object-contain p-0.5">
@@ -388,7 +388,7 @@
   </div>
 </div>
 
-<!-- 設定モーダル（更新ボタンを安全に移設） -->
+<!-- 設定モーダル -->
 <div id="modal-settings" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-xl max-w-sm w-full p-4 space-y-4 shadow-xl max-h-[90vh] flex flex-col">
     <div class="flex justify-between items-center border-b pb-2">
@@ -397,13 +397,42 @@
     </div>
 
     <div class="space-y-4 overflow-y-auto flex-1 text-xs">
-      <!-- アプリ最新版更新ボタン（移設） -->
+      <!-- アプリ最新版更新ボタン -->
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-2.5 space-y-1.5">
         <label class="font-bold text-gray-700 block">🔄 アプリの最新化</label>
         <p class="text-[10px] text-gray-500">GitHubで更新したプログラムを今すぐアプリに反映します。</p>
         <button onclick="forceReloadApp()" class="w-full py-2 bg-white border border-[#D1D8CD] rounded font-bold text-xs text-gray-700 shadow-sm active:bg-gray-100 flex items-center justify-center gap-1">
           <span>🔄</span><span>アプリを最新版に更新する</span>
         </button>
+      </div>
+
+      <!-- Google ドライブ自動バックアップ連携 -->
+      <div class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-3 space-y-2">
+        <div class="flex justify-between items-center">
+          <label class="font-bold text-emerald-900 flex items-center gap-1">
+            <span>☁️</span><span>Google ドライブ自動バックアップ</span>
+          </label>
+        </div>
+        <p class="text-[10px] text-gray-600 leading-tight">
+          GASのウェブアプリURLを設定すると、対局登録時に自動でGoogleドライブ上へ上書き保存されます。
+        </p>
+        <input type="text" id="settings-gas-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-white border border-emerald-300 rounded p-1.5 text-xs font-mono outline-none">
+        
+        <div class="flex items-center gap-2 pt-0.5">
+          <label class="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700 text-xs">
+            <input type="checkbox" id="settings-gas-auto-enabled" class="w-4 h-4 text-[#4A5D4E] rounded">
+            <span>自動バックアップを有効にする</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="saveGasSettings()" class="py-1.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow-sm">
+            連携設定を保存
+          </button>
+          <button onclick="triggerManualGasSync()" class="py-1.5 bg-white border border-emerald-300 text-emerald-800 rounded font-bold text-xs active:bg-emerald-100">
+            ☁️ 今すぐクラウドへ同期
+          </button>
+        </div>
       </div>
 
       <div class="space-y-1 border-t pt-3">
@@ -416,7 +445,7 @@
 
       <div class="space-y-2 border-t pt-3">
         <label class="font-bold text-gray-700 flex items-center gap-1">
-          <span>💾 バックアップ＆端末間同期</span>
+          <span>💾 手動バックアップ＆端末間同期</span>
         </label>
         <p class="text-[11px] text-gray-500 leading-relaxed">
           データをファイルとして保存したり、別の端末やブラウザへ一瞬で引き継ぐことができます。
@@ -545,6 +574,51 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHistory();
   renderHome();
 });
+
+// Google ドライブ自動同期関数
+async function syncToGoogleDrive(isManual = false) {
+  const gasUrl = localStorage.getItem('mahjong_gas_url');
+  const autoEnabled = localStorage.getItem('mahjong_gas_auto') === 'true';
+
+  if(!gasUrl || (!autoEnabled && !isManual)) return;
+
+  const history = localStorage.getItem('mahjong_history') || '[]';
+  const myName = localStorage.getItem('mahjong_my_name') || '自分';
+  const backupData = {
+    myName,
+    history: JSON.parse(history),
+    syncedAt: new Date().toISOString()
+  };
+
+  try {
+    await fetch(gasUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(backupData)
+    });
+    if(isManual) {
+      alert('Google ドライブへのバックアップ同期が完了しました！');
+    }
+  } catch(err) {
+    if(isManual) {
+      alert('同期に失敗しました。URLを確認してください。');
+    }
+  }
+}
+
+function saveGasSettings() {
+  const url = document.getElementById('settings-gas-url').value.trim();
+  const auto = document.getElementById('settings-gas-auto-enabled').checked;
+  localStorage.setItem('mahjong_gas_url', url);
+  localStorage.setItem('mahjong_gas_auto', auto ? 'true' : 'false');
+  alert('連携設定を保存しました。');
+}
+
+function triggerManualGasSync() {
+  saveGasSettings();
+  syncToGoogleDrive(true);
+}
 
 // カスタムキーボード制御
 function openKeypad(el, type, rId = null, pIdx = null) {
@@ -837,6 +911,12 @@ function toggleConfig() {
 function openSettingsModal() {
   const savedMyName = localStorage.getItem('mahjong_my_name') || '自分';
   document.getElementById('settings-myname-input').value = savedMyName;
+
+  const gasUrl = localStorage.getItem('mahjong_gas_url') || '';
+  const gasAuto = localStorage.getItem('mahjong_gas_auto') === 'true';
+  document.getElementById('settings-gas-url').value = gasUrl;
+  document.getElementById('settings-gas-auto-enabled').checked = gasAuto;
+
   document.getElementById('modal-settings').classList.remove('hidden');
 }
 
@@ -880,6 +960,7 @@ function applyNewMyName(name) {
 
   renderHome();
   renderHistory();
+  syncToGoogleDrive();
 }
 
 function exportBackupData() {
@@ -919,6 +1000,7 @@ function importBackupData(e) {
         initPeriodSelectors();
         renderHistory();
         renderHome();
+        syncToGoogleDrive();
       } else {
         alert('無効なバックアップファイルです。');
       }
@@ -1206,6 +1288,9 @@ function saveMatch() {
   renderHistory();
   renderHome();
   showTab('history');
+
+  // Google ドライブへ自動バックアップ送信
+  syncToGoogleDrive();
 }
 
 function initNewMatchSheet() {
@@ -1332,6 +1417,7 @@ function executeCsvImport() {
     initPeriodSelectors();
     renderHistory();
     renderHome();
+    syncToGoogleDrive();
   } else {
     alert('インポート可能なデータが見つかりませんでした。フォーマットを確認してください。');
   }
@@ -1346,6 +1432,7 @@ function clearAllData() {
     initPeriodSelectors();
     renderHistory();
     renderHome();
+    syncToGoogleDrive();
   }
 }
 
@@ -1474,6 +1561,7 @@ function deleteMatch(id) {
   initPeriodSelectors();
   renderHistory();
   renderHome();
+  syncToGoogleDrive();
 }
 
 function initPeriodSelectors() {
