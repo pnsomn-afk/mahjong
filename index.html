@@ -410,7 +410,7 @@
       <div class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-3 space-y-2">
         <div class="flex justify-between items-center">
           <label class="font-bold text-emerald-900 flex items-center gap-1">
-            <span>☁️</span><span>Google ドライブ自動バックアップ</span>
+            <span>☁️</span><span>Google ドライブ連携 (自動バックアップ)</span>
           </label>
         </div>
         <p class="text-[10px] text-gray-600 leading-tight">
@@ -425,12 +425,16 @@
           </label>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <button onclick="saveGasSettings()" class="py-1.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow-sm">
-            連携設定を保存
+        <button onclick="saveGasSettings()" class="w-full py-1.5 bg-[#4A5D4E] text-white rounded font-bold text-xs shadow-sm">
+          連携設定を保存
+        </button>
+
+        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-200/60">
+          <button onclick="triggerManualGasSync()" class="py-2 bg-white border border-emerald-300 text-emerald-800 rounded font-bold text-[11px] active:bg-emerald-100">
+            ☁️ クラウドへ保存
           </button>
-          <button onclick="triggerManualGasSync()" class="py-1.5 bg-white border border-emerald-300 text-emerald-800 rounded font-bold text-xs active:bg-emerald-100">
-            ☁️ 今すぐクラウドへ同期
+          <button onclick="restoreFromGoogleDrive()" class="py-2 bg-emerald-600 text-white rounded font-bold text-[11px] active:bg-emerald-700 shadow-sm">
+            ☁️ クラウドから復元
           </button>
         </div>
       </div>
@@ -454,9 +458,9 @@
           <button onclick="exportBackupData()" class="py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-bold text-xs flex items-center justify-center gap-1">
             <span>📥</span><span>バックアップ保存</span>
           </button>
-          <label class="py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-bold text-xs flex items-center justify-center gap-1 cursor-pointer text-center">
+          <label class="py-2.5 bg-gray-50 text-gray-700 border border-gray-300 rounded font-bold text-xs flex items-center justify-center gap-1 cursor-pointer text-center">
             <span>📂</span><span>ファイルから復元</span>
-            <input type="file" id="backup-file-input" onchange="importBackupData(event)" class="hidden" accept=".json">
+            <input type="file" id="backup-file-input" onchange="importBackupData(event)" class="hidden">
           </label>
         </div>
       </div>
@@ -575,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHome();
 });
 
-// Google ドライブ自動同期関数
+// Google ドライブ自動同期関数（保存）
 async function syncToGoogleDrive(isManual = false) {
   const gasUrl = localStorage.getItem('mahjong_gas_url');
   const autoEnabled = localStorage.getItem('mahjong_gas_auto') === 'true';
@@ -598,7 +602,7 @@ async function syncToGoogleDrive(isManual = false) {
       body: JSON.stringify(backupData)
     });
     if(isManual) {
-      alert('Google ドライブへのバックアップ同期が完了しました！');
+      alert('Google ドライブへのバックアップ保存が完了しました！');
     }
   } catch(err) {
     if(isManual) {
@@ -607,12 +611,52 @@ async function syncToGoogleDrive(isManual = false) {
   }
 }
 
+// Google ドライブからのワンタップ復元関数
+async function restoreFromGoogleDrive() {
+  const gasUrl = document.getElementById('settings-gas-url').value.trim();
+  if(!gasUrl) {
+    alert('連携URLが入力されていません。');
+    return;
+  }
+
+  if(!confirm('Google ドライブのバックアップデータから復元しますか？\n（現在のデータは上書きされます）')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(gasUrl);
+    const data = await res.json();
+
+    if(data.error === 'not_found') {
+      alert('Google ドライブ内にバックアップファイルが見つかりませんでした。');
+      return;
+    }
+
+    if(data.history && Array.isArray(data.history)) {
+      localStorage.setItem('mahjong_history', JSON.stringify(data.history));
+      if(data.myName) {
+        localStorage.setItem('mahjong_my_name', data.myName);
+        document.getElementById('pname-0').value = data.myName;
+      }
+      saveGasSettings();
+      alert(`${data.history.length} 件の対局データをGoogle ドライブから完全復元しました！`);
+      closeSettingsModal();
+      initPeriodSelectors();
+      renderHistory();
+      renderHome();
+    } else {
+      alert('無効なデータ形式です。');
+    }
+  } catch(err) {
+    alert('復元に失敗しました。URLまたはGASの公開設定を確認してください。');
+  }
+}
+
 function saveGasSettings() {
   const url = document.getElementById('settings-gas-url').value.trim();
   const auto = document.getElementById('settings-gas-auto-enabled').checked;
   localStorage.setItem('mahjong_gas_url', url);
   localStorage.setItem('mahjong_gas_auto', auto ? 'true' : 'false');
-  alert('連携設定を保存しました。');
 }
 
 function triggerManualGasSync() {
@@ -824,24 +868,6 @@ function onScoreInput(rId, pIdx) {
     input.className = 'w-full h-9 bg-white border border-[#D1D8CD] rounded-lg text-center font-bold text-sm outline-none cursor-pointer';
     if(badge) badge.classList.add('hidden');
   }
-  calcTotals();
-}
-
-function recheckTobiAll() {
-  const tobiLimit = parseFloat(document.getElementById('cfg-tobi').value) || -65;
-  const rows = document.getElementById('score-rows').querySelectorAll('tr');
-  rows.forEach(tr => {
-    const rId = tr.dataset.rId;
-    for(let i=0; i<4; i++) {
-      const input = document.getElementById(`score-${rId}-${i}`);
-      const badge = document.getElementById(`tobi-badge-${rId}-${i}`);
-      if(input && badge && input.value !== '' && input.value !== 'ー') {
-        const val = parseFloat(input.value);
-        if(!isNaN(val) && val <= tobiLimit) badge.classList.remove('hidden');
-        else badge.classList.add('hidden');
-      }
-    }
-  });
   calcTotals();
 }
 
